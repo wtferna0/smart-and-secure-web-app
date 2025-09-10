@@ -1,0 +1,8 @@
+h1{ font-family:var(--font-display); }
+.auth-form{ padding:1rem; display:grid; gap:.8rem; max-width:440px; }
+.auth-form label{ display:grid; gap:.4rem; font-weight:600; }
+.auth-form input{ padding:.65rem .8rem; border:1px solid var(--border); border-radius:10px; }
+.tabs{ display:flex; gap:.5rem; margin-bottom:.5rem }
+.tabs button{ flex:1; padding:.5rem; border:1px solid var(--border); border-radius:999px; background:#fff; cursor:pointer }
+.tabs .active{ background:#7a4d25; color:#fff; border-color:#7a4d25 }
+.muted{ opacity:.8; }

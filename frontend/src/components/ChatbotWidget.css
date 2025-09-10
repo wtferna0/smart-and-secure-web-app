@@ -1,0 +1,4 @@
+.bot-btn{ position:fixed; right:18px; bottom:18px; width:52px; height:52px; border-radius:50%; border:none; background:#8a1d2d; color:#fff; font-size:22px; box-shadow:0 8px 20px rgba(0,0,0,.2); z-index:45; cursor:pointer }
+.bot-card{ position:fixed; right:18px; bottom:84px; width:320px; z-index:44; }
+.bot-head{ padding:.6rem; display:flex; justify-content:space-between; border-bottom:1px solid var(--border) }
+.bot-body{ padding:.8rem }
