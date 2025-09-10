@@ -1,0 +1,27 @@
+.banner{ background:linear-gradient(90deg, #6b3f1e, #8a1d2d); color:#fff; display:flex; align-items:center; gap:1rem; padding:1rem }
+.avatar{ width:64px; height:64px; border-radius:50%; display:grid; place-items:center; background:#fff2; font-size:1.6rem }
+.who{ display:grid; gap:.2rem }
+.tabbar{ margin:.6rem 0; display:flex; gap:.5rem }
+.tabbar button{ padding:.5rem 1rem; border:1px solid var(--border); border-radius:999px; background:#fff; cursor:pointer }
+.tabbar .active{ background:#7a4d25; color:#fff; border-color:#7a4d25 }
+.p{ padding:1rem }
+.stats{ grid-template-columns:repeat(3, minmax(0,1fr)); gap:1rem; }
+.stat{ display:grid; place-items:center; border:1px solid var(--border); border-radius:12px; padding:1rem }
+.big{ font-size:1.6rem; font-weight:800 }
+.table{ width:100%; border-collapse:collapse; margin-top:.5rem }
+.table th,.table td{ padding:.6rem; border-bottom:1px solid var(--border); text-align:left }
+.badge.ok{ background:#e6f4ea; color:#1b7a3f; padding:.15rem .45rem; border-radius:999px; font-weight:700 }
+.lp-points{ font-size:2.2rem; font-weight:800; display:flex; align-items:flex-end; gap:.5rem }
+.lp-points span{ font-size:.9rem; font-weight:600; opacity:.8 }
+.lp-progress{ margin:.6rem 0 1rem }
+.lp-bar{ height:10px; background:#f0e7e7; border-radius:999px; overflow:hidden }
+.lp-bar > span{ display:block; height:100%; background:#8a1d2d }
+.lp-caption{ text-align:right; font-size:.85rem; opacity:.8; margin-top:.2rem }
+.lp-milestones{ display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:.8rem; margin-top:.6rem }
+.m-icon{ width:42px; height:42px; border-radius:50%; display:grid; place-items:center; background:#f6e9eb; color:#8a1d2d; margin-bottom:.25rem; }
+.m-title{ font-weight:800 } .m-note{ opacity:.8; font-size:.9rem }
+.rw-list{ list-style:none; margin:.6rem 0 0; padding:0; display:grid; gap:.6rem }
+.rw{ display:flex; justify-content:space-between; align-items:center; padding:.8rem 1rem; border:1px dashed #e6ded9; border-radius:12px; background:#f8f5f2 }
+.rw-badge{ padding:.2rem .5rem; border-radius:999px; font-weight:700; font-size:.8rem }
+.rw-badge.ok{ background:#e6f4ea; color:#1b7a3f } .rw-badge.used{ background:#efe8e6; color:#6a5a54 }
+@media (max-width: 900px){ .stats{ grid-template-columns:1fr } .lp-milestones{ grid-template-columns:1fr } }

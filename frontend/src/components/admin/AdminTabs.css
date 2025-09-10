@@ -1,0 +1,6 @@
+.admin-tabs-wrap{ position:sticky; top:64px; z-index:40; background:transparent; padding-top:.25rem; margin-bottom:.75rem }
+.admin-tabs{ display:flex; gap:.5rem; padding:.4rem; align-items:center; background:var(--muted); border:1px solid var(--border); border-radius:999px; }
+.tab-link{ display:inline-flex; align-items:center; gap:.4rem; padding:.45rem .9rem; border-radius:999px; border:1px solid transparent; font-weight:700; color:#5b3a1a; }
+.tab-link.active{ background:#7a4d25; color:#fff; border-color:#7a4d25 }
+.t-ic{ font-size:1rem; line-height:1 }
+@media (max-width:860px){ .admin-tabs{ flex-wrap:wrap } }

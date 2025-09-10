@@ -1,0 +1,21 @@
+.menu h1{ font-family:var(--font-display); margin:0 0 .5rem }
+.menu-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem }
+.sort select{ border:1px solid var(--border); border-radius:10px; padding:.35rem .5rem; background:white }
+
+.menu-layout{ display:grid; grid-template-columns:280px 1fr; gap:1rem }
+.cat-panel{ padding:1rem }
+.cat-panel h3{ margin:.2rem 0 .8rem }
+.cat-panel ul{ list-style:none; margin:0; padding:0; display:grid; gap:.6rem }
+.cat-pill{ width:100%; text-align:left; padding:.6rem .8rem; border-radius:12px; border:1px solid var(--border); background:#fff; cursor:pointer }
+.cat-pill.active{ background:#7a4d25; color:#fff; border-color:#7a4d25 }
+
+.items-grid{ display:grid; gap:1rem; grid-template-columns:repeat(3, minmax(0,1fr)); }
+.menu-card img{ border-radius:12px 12px 0 0; aspect-ratio: 4/3; object-fit:cover; }
+.mc-body{ padding:1rem; }
+.chip.rating{ background:#f1dbe0; color:#8a1d2d; border-radius:999px; padding:.2rem .5rem; font-weight:700; font-size:.85rem }
+.mc-foot{ width:100%; align-items:center; justify-content:space-between }
+.price{ font-weight:800; color:#5b3a1a }
+.add{ background:#8a1d2d; color:#fff }
+
+@media (max-width: 1100px){ .items-grid{ grid-template-columns:repeat(2,1fr) } }
+@media (max-width: 800px){ .menu-layout{ grid-template-columns:1fr } .items-grid{ grid-template-columns:1fr } }
