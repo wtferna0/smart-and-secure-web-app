@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     "payments",
     "loyalty",
     "crowd",
+    "chatbot",
+    "puzzle",
 ]
 
 MIDDLEWARE = [
