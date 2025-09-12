@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang='en'>
+<head>
+<meta charset='utf-8'/><meta name='viewport' content='width=device-width, initial-scale=1'/>
+<title>Sliding Puzzle</title>
+<link rel='stylesheet' href='/static/puzzle/puzzle.css'/>
+</head>
+<body>
+<div class='container'>
+  <h1>Sliding Puzzle</h1>
+  <div class='controls'>
+    <label>Email (for rewards):</label>
+    <input id='email' type='email' placeholder='demo@cafe.test'/>
+    <label>Grid:</label>
+    <select id='grid'>
+      <option value='3'>3 x 3</option>
+      <option value='4'>4 x 4</option>
+      <option value='5'>5 x 5</option>
+    </select>
+    <button id='startBtn'>Start</button>
+    <span id='timer'>00:00</span>
+  </div>
+  <div id='board' class='board'></div>
+  <div class='status'>
+    <span id='moves'>Moves: 0</span>
+    <span id='message'></span>
+    <div id='reward'></div>
+  </div>
+</div>
+<script src='/static/puzzle/puzzle.js'></script>
+</body>
+</html>
