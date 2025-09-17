@@ -35,13 +35,15 @@ class Order(models.Model):
     def __str__(self):
         return self.order_token
 
+# orders/models.py
 class OrderItem(models.Model):
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
-    menu_item = models.ForeignKey("catalog.MenuItem", on_delete=models.PROTECT)
-    item_name = models.CharField(max_length=120)  # snapshot
-    price_each = models.DecimalField(max_digits=10, decimal_places=2, default=0)  # snapshot
-    qty = models.IntegerField(default=1)
-    line_total = models.DecimalField(max_digits=10, decimal_places=2, default=0)  # snapshot
+    order = models.ForeignKey('orders.Order', on_delete=models.CASCADE)
+    menu_item = models.ForeignKey('catalog.MenuItem', on_delete=models.PROTECT, null=True, blank=True)  # <- ensure this
+    item_name = models.CharField(max_length=255)
+    price_each = models.DecimalField(max_digits=10, decimal_places=2)
+    qty = models.PositiveIntegerField()
+    line_total = models.DecimalField(max_digits=10, decimal_places=2)
+
 
     def __str__(self):
         return f"{self.item_name} x{self.qty}"

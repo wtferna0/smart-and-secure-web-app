@@ -13,10 +13,17 @@ class Payment(models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     currency = models.CharField(max_length=3, default="LKR")
 
-    status = models.CharField(max_length=20, default="PENDING")  # PENDING/SUCCESS/FAILED
+    status = models.CharField(max_length=20, default="PENDING")  # e.g. PENDING/PAID/FAILED
     raw_payload = models.JSONField(default=dict, blank=True)     # webhook snapshot
 
-    order = models.ForeignKey("orders.Order", on_delete=models.PROTECT, related_name="payments")
+    # Make this nullable to allow adding the column and creating payments without an order
+    order = models.ForeignKey(
+        "orders.Order",
+        on_delete=models.PROTECT,
+        related_name="payments",
+        null=True,
+        blank=True,
+    )
 
     created_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
     created_at = models.DateTimeField(auto_now_add=True)
