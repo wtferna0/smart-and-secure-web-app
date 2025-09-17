@@ -1,0 +1,19 @@
+.modal-backdrop{
+  position:fixed; inset:0; background:rgba(0,0,0,.35);
+  display:grid; place-items:center; z-index:80;
+}
+.modal-card{
+  width:min(640px, 92vw); background:#fff; border:1px solid var(--border);
+  border-radius:14px; box-shadow:0 20px 40px rgba(0,0,0,.25);
+}
+.modal-head{
+  padding:12px 14px; border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+}
+.modal-body{ padding:14px; display:grid; gap:10px }
+.modal-body form{ display:grid; gap:10px }
+.modal-body label{ display:grid; gap:6px; font-weight:600 }
+.modal-body input, .modal-body textarea, .modal-body select{
+  padding:10px 13px; border:1px solid var(--border); border-radius:10px;
+}
+.modal-actions{ display:flex; gap:8px; justify-content:flex-end; margin-top:4px }

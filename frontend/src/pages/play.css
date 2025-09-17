@@ -1,0 +1,13 @@
+.play h1 {
+  margin: 0 0 10px;
+}
+.c-pad { padding: 16px; }
+.ok-list { margin: 6px 0; padding-left: 20px; }
+.muted { color: #6b7280; }
+.small { font-size: 12px; }
+.row { display: flex; align-items: center; gap: 8px; }
+.grid { display: grid; }
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; }
+.btn { padding: 8px 12px; border: 1px solid var(--border); border-radius: 10px; background: #fff; cursor: pointer; }
+.btn-primary { background: var(--brand); color: #fff; border-color: var(--brand); }
+.bad { color: #b91c1c; }
