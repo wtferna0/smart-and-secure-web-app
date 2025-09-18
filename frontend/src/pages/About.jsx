@@ -1,21 +1,39 @@
 import React from "react";
 import "./about.css";
 
+// import images from assets/mock
+import cafeHero from "../assets/mock/cafe.jpg";
+import story1 from "../assets/mock/cafe1.jpg";
+import story2 from "../assets/mock/cafe2.jpg";
+import story3 from "../assets/mock/cafe3.jpg";
+
 export default function About(){
   return (
     <section className="about">
       <h1>About QWIK BREW</h1>
-      <p className="lead">More than just a café – we’re your neighborhood gathering place where premium coffee meets authentic flavors, creating the perfect atmosphere for work, study, and connection.</p>
+      <p className="lead">
+        More than just a café – we’re your neighborhood gathering place where premium coffee
+        meets authentic flavors, creating the perfect atmosphere for work, study, and connection.
+      </p>
 
-      <div className="hero-img card" />
+      {/* hero image with inline style */}
+      <div
+        className="hero-img card"
+        style={{ background: `url(${cafeHero}) center/cover no-repeat` }}
+      />
 
       <h2>Our Story</h2>
       <div className="story">
-        <p>Founded in 2020 by coffee enthusiasts, QWIK BREW set out to create a space where exceptional coffee meets authentic Indian flavors and cutting-edge convenience. What started as a cozy neighborhood hub has grown into a beloved community space for students, professionals, and families alike.</p>
+        <p>
+          Founded in 2020 by coffee enthusiasts, QWIK BREW set out to create a space where
+          exceptional coffee meets authentic Indian flavors and cutting-edge convenience.
+          What started as a cozy neighborhood hub has grown into a beloved community space
+          for students, professionals, and families alike.
+        </p>
         <div className="story-grid">
-          <div className="ph card" />
-          <div className="ph card" />
-          <div className="ph card" />
+          <div className="card"><img src={story1} alt="Cafe interior" /></div>
+          <div className="card"><img src={story2} alt="Coffee brewing" /></div>
+          <div className="card"><img src={story3} alt="Community space" /></div>
         </div>
       </div>
 

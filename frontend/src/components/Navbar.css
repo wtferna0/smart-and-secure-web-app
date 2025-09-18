@@ -1,12 +1,74 @@
-.navbar{ position:sticky; top:0; z-index:50; background:#fff; border-bottom:1px solid var(--border); }
-.nav-inner{ max-width:1200px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:.6rem 16px; }
-.brand{ display:flex; align-items:center; gap:.6rem }
-.logo{ width:38px; height:38px; display:grid; place-items:center; background:#7a4d25; color:#fff; border-radius:50% }
-.brand-txt small{ display:block; font-size:.78rem; color:#6b6b6b }
-.links{ display:flex; gap:.8rem }
-.links a{ padding:.4rem .6rem; border-radius:999px }
-.links a.active{ background:#f0ebe6; font-weight:800; color:#7a4d25 }
-.right{ display:flex; align-items:center; gap:.5rem }
-.badge{ position:relative }
-.pill{ background:#8a1d2d; color:#fff; padding:.1rem .45rem; border-radius:999px; margin-left:.35rem; font-weight:800; font-size:.8rem }
-@media (max-width:860px){ .links{ display:none } }
+/* src/components/Navbar.css */
+
+/* container */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+}
+
+/* inner row */
+.nav-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: .6rem 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+/* brand */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  text-decoration: none;
+  font-weight: 800;
+  color: #4b2e19;
+  letter-spacing: .3px;
+}
+
+/* left and right groups */
+.nav-left,
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+}
+
+/* links */
+.nav-link {
+  text-decoration: none;
+  color: #333;
+  padding: .4rem .6rem;
+  border-radius: 999px;
+}
+
+.nav-link.active {
+  background: #f0ebe6;
+  font-weight: 800;
+  color: #7a4d25;
+}
+
+/* buttons (reuse your global .btn if you have it; these are safe defaults) */
+.btn {
+  padding: .4rem .7rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: #7a4d25;
+  border-color: #7a4d25;
+  color: #fff;
+}
+
+/* responsive: hide left nav links on narrow screens */
+@media (max-width: 860px){
+  .nav-left { display: none; }
+}

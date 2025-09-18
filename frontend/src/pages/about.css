@@ -1,6 +1,10 @@
 .about h1{ font-family:var(--font-display); margin:0 0 .5rem }
 .lead{ max-width:800px }
-.hero-img{ height:240px; margin:1rem 0 1.25rem; background:url('/src/assets/mock/cafe.jpg') center/cover no-repeat }
+.hero-img{
+  height:240px;
+  margin:1rem 0 1.25rem;
+  background: url('../assets/mock/cafe.jpg') center/cover no-repeat;
+}
 .story{ display:grid; gap:1rem }
 .story-grid{ display:grid; gap:1rem; grid-template-columns:repeat(3, minmax(0,1fr)); }
 .ph{ height:120px; }

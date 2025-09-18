@@ -1,36 +1,59 @@
 import React from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import "./Navbar.css";
+import { useAuth } from "../context/AuthContext.jsx";
 import { useCart } from "../context/CartContext.jsx";
 
 export default function Navbar(){
-  const { items, setOpen } = useCart();
-  const count = items.reduce((s,i)=>s+i.qty,0);
+  const { user, logout } = useAuth();
+  const { setOpen } = useCart();
+  const navigate = useNavigate();
+
+  const active = ({ isActive }) => isActive ? "nav-link active" : "nav-link";
 
   return (
-    <header className="navbar">
+    <header className="nav">
       <div className="nav-inner">
-        <Link to="/" className="brand">
-          <span className="logo">☕</span>
-          <div className="brand-txt">
-            <strong>QWIK BREW</strong>
-            <small>Premium Coffee & More</small>
-          </div>
-        </Link>
+        <Link className="brand" to="/">QWIK BREW</Link>
 
-        <nav className="links">
-          <NavLink to="/" end>Home</NavLink>
-          <NavLink to="/menu">Menu</NavLink>
-          <NavLink to="/about">About</NavLink>
-          <NavLink to="/play">Play Now</NavLink>
-          <NavLink to="/contact">Contact</NavLink>
+        <nav className="nav-left">
+          <NavLink className={active} to="/">Home</NavLink>
+          <NavLink className={active} to="/menu">Menu</NavLink>
+          <NavLink className={active} to="/about">About</NavLink>
+          <NavLink className={active} to="/play">Play Now</NavLink>
+          <NavLink className={active} to="/contact">Contact</NavLink>
         </nav>
 
-        <div className="right">
-          <Link className="btn badge" to="/admin">⚙︎ Admin</Link>
-          <button className="btn badge" onClick={()=>setOpen(true)}>🛒 Cart <span className="pill">{count}</span></button>
-          <Link className="btn" to="/login">🔒 Login</Link>
-        </div>
+        <nav className="nav-right">
+          {/* Show Admin entry only for admins */}
+          {user?.role === "admin" && (
+            <NavLink className={active} to="/admin">Admin</NavLink>
+          )}
+
+          {/* Customer profile */}
+          {user?.role === "customer" && (
+            <NavLink className={active} to="/profile">My Profile</NavLink>
+          )}
+
+          {/* Cart is always available */}
+          <button className="btn" onClick={()=>setOpen(true)}>Cart</button>
+
+          {/* Auth buttons */}
+          {!user && (
+            <NavLink className="btn btn-primary" to="/login">Login</NavLink>
+          )}
+          {user && (
+            <button
+              className="btn"
+              onClick={()=>{
+                logout();
+                navigate("/"); // back to public
+              }}
+            >
+              Sign Out
+            </button>
+          )}
+        </nav>
       </div>
     </header>
   );
