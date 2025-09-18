@@ -1,0 +1,55 @@
+[
+  {
+    "model": "chatbot.chatmenuitem",
+    "pk": 1,
+    "fields": {
+      "name": "Cappuccino",
+      "description": "Rich espresso with foam",
+      "price": "750.00",
+      "category": "Coffee",
+      "image_url": ""
+    }
+  },
+  {
+    "model": "chatbot.chatmenuitem",
+    "pk": 2,
+    "fields": {
+      "name": "Espresso",
+      "description": "Strong and bold",
+      "price": "600.00",
+      "category": "Coffee",
+      "image_url": ""
+    }
+  },
+  {
+    "model": "chatbot.chatmenuitem",
+    "pk": 3,
+    "fields": {
+      "name": "Masala Chai",
+      "description": "Spiced tea",
+      "price": "650.00",
+      "category": "Tea",
+      "image_url": ""
+    }
+  },
+  {
+    "model": "chatbot.chatmenuitem",
+    "pk": 4,
+    "fields": {
+      "name": "Croissant",
+      "description": "Buttery pastry",
+      "price": "550.00",
+      "category": "Pastry",
+      "image_url": ""
+    }
+  },
+  {
+    "model": "chatbot.chatcustomer",
+    "pk": 1,
+    "fields": {
+      "email": "demo@cafe.test",
+      "name": "Demo User",
+      "loyalty_points": 150
+    }
+  }
+]
