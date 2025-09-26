@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import "./login.css"; // keep or remove if not used
+import "./login.css";
 import { useAuth } from "../../context/AuthContext.jsx";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 export default function Login(){
   const { login } = useAuth();
@@ -18,15 +18,13 @@ export default function Login(){
     e.preventDefault();
     setErr("");
 
-    // Demo auth: any email/password is accepted
-    // In production, replace with real API call then set role from server.
     if(mode !== "customer" && mode !== "admin"){
       return setErr("Select a role.");
     }
 
+    // DEMO: any email/password works; role chosen by toggle
     login(mode, { email, name: email?.split("@")[0] || (mode === "admin" ? "Admin" : "Customer") });
 
-    // Redirect: prefer where they tried to go, else role home
     if (from) return navigate(from, { replace: true });
     if (mode === "admin") return navigate("/admin", { replace: true });
     return navigate("/profile", { replace: true });
@@ -34,7 +32,7 @@ export default function Login(){
 
   return (
     <section className="login">
-      <h1>Welcome to Brew & Bytes</h1>
+      <h1>Welcome back</h1>
       <div className="card c-pad" style={{ maxWidth: 520 }}>
         <div className="row" style={{ gap: 8, marginBottom: 10 }}>
           <button className={`btn ${mode==='customer'?'btn-primary':''}`} onClick={()=>setMode("customer")}>Customer</button>
@@ -51,8 +49,14 @@ export default function Login(){
           </label>
           {err && <div className="bad">{err}</div>}
           <button className="btn btn-primary" type="submit">Sign In</button>
-          <div className="muted small">Demo: any email & password. Role is chosen above.</div>
+          <div className="muted small">
+            Demo: any email & password. Role is chosen above.
+          </div>
         </form>
+
+        <div className="muted small" style={{ marginTop: 10 }}>
+          New here? <Link to="/signup">Create an account</Link>
+        </div>
       </div>
     </section>
   );
