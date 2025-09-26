@@ -2,18 +2,18 @@ import React, { useState } from "react";
 import "./dashboard.css";
 import AdminTabs from "../../components/admin/AdminTabs.jsx";
 
-export default function AdminDashboard(){
+export default function AdminDashboard() {
   const [orders] = useState([
-    { id:"A001", user:"Guest", total: 2650, status:"Accepted" },
-    { id:"A002", user:"sarah@qwik", total: 1550, status:"Pending" },
+    { id:"A001", user:"Guest", total:2650, status:"Accepted" },
+    { id:"A002", user:"sarah@qwik", total:1550, status:"Pending" },
   ]);
   const crowd = [450,600,750,900,1050,1200,800]; // demo
 
   const statusCount = { New:0, Preparing:0, Ready:0, Completed:0 };
-  orders.forEach(o=>{
-    if(o.status==="Pending") statusCount.New++;
-    if(o.status==="Accepted") statusCount.Preparing++;
-    if(o.status==="Done") statusCount.Completed++;
+  orders.forEach(o => {
+    if (o.status === "Pending") statusCount.New++;
+    if (o.status === "Accepted") statusCount.Preparing++;
+    if (o.status === "Done") statusCount.Completed++;
   });
 
   return (
@@ -21,6 +21,7 @@ export default function AdminDashboard(){
       <AdminTabs />
       <h1>Admin Dashboard</h1>
 
+      {/* KPIs */}
       <div className="grid kpis">
         <div className="card kpi"><div className="kpi-top"><span>Orders Today</span><strong>0</strong></div></div>
         <div className="card kpi"><div className="kpi-top"><span>Revenue Today</span><strong>$0.00</strong></div></div>
@@ -28,8 +29,10 @@ export default function AdminDashboard(){
         <div className="card kpi"><div className="kpi-top"><span>Crowd Level</span><strong>Normal</strong></div></div>
       </div>
 
+      {/* Main panels */}
       <div className="grid admin-grid">
-        <div className="card p">
+        {/* Make Weekly Performance stretch across the full row */}
+        <div className="card p span-2">
           <h3>Weekly Performance</h3>
           <div className="bars">
             {crowd.map((v,i)=>(
@@ -60,16 +63,6 @@ export default function AdminDashboard(){
             <li>Chocolate Chip Cookie — 15 orders</li>
             <li>Avocado Toast — 12 orders</li>
           </ol>
-        </div>
-
-        <div className="card p">
-          <h3>Quick Actions</h3>
-          <div className="qa">
-            <a className="btn" href="/admin/orders">Manage Orders</a>
-            <a className="btn" href="/admin/menu-stock">Update Menu</a>
-            <a className="btn" href="/admin/users">Manage Users</a>
-            <a className="btn" href="/admin/crowd">Crowd Control</a>
-          </div>
         </div>
       </div>
     </section>
