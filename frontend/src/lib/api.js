@@ -1,4 +1,4 @@
-export const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
+export const API_BASE = import.meta.env.VITE_API_BASE || "https://cafe-app.duckdns.org";
 
 async function request(path, { method = "GET", body, headers } = {}) {
   const url = `${API_BASE}${path}`;
@@ -29,7 +29,7 @@ async function request(path, { method = "GET", body, headers } = {}) {
 }
 
 export const api = {
-  startPuzzle:    (payload) => request("/puzzle/start/",    { method: "POST", body: payload }),
-  completePuzzle: (payload) => request("/puzzle/complete/", { method: "POST", body: payload }),
-  getSession:     (id)      => request(`/puzzle/sessions/${id}/`),
+  startPuzzle:    (payload) => request("/api/start-puzzle/",    { method: "POST", body: payload }),
+  completePuzzle: (payload) => request("/api/complete-puzzle/", { method: "POST", body: payload }),
+  getSession:     (id)      => request(`/api/sessions/${id}/`),
 };

@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import "./checkout.css";
+import "./Checkout.css";
 import { useCart } from "../context/CartContext.jsx";
 import { useNavigate } from "react-router-dom";
 

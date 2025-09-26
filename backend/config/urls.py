@@ -12,5 +12,5 @@ urlpatterns = [
 
 
     path("api/", include("chatbot.urls")),
-    path("puzzle/", include("puzzle.urls")),
+    path("api/", include("puzzle.urls")),
 ]

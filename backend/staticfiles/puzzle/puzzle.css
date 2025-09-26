@@ -1,0 +1,11 @@
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,Segoe UI,Roboto,Inter,sans-serif;background:#f7f8fb;color:#111}
+.container{max-width:900px;margin:24px auto;padding:16px}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.controls input,.controls select{padding:8px;border:1px solid #ccd;border-radius:8px}
+.controls button{padding:10px 14px;border:0;border-radius:10px;background:#0a66ff;color:#fff;cursor:pointer}
+.board{width:540px;height:540px;max-width:90vw;max-height:90vw;background:#e9edf6;border-radius:12px;display:grid;gap:6px;margin:12px 0}
+.tile{display:flex;align-items:center;justify-content:center;background:#fff;border-radius:10px;font-weight:600;font-size:20px;user-select:none;cursor:pointer;transition:transform .06s}
+.tile.empty{background:transparent;cursor:default;border:2px dashed #cfd6e6}
+.status{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+#message{font-weight:600}
+#reward{margin-top:8px}
