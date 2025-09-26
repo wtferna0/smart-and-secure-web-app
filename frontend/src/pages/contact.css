@@ -97,17 +97,32 @@
 
 /* Side panel */
 .side{ padding: 1rem; }
+
 .side h3{ margin: 0 0 .4rem; }
+
 .info-list{
-  list-style: none; margin: .3rem 0 1rem; padding: 0;
-  display: grid; gap: .35rem;
+  list-style: none;
+  margin: .3rem 0 1rem;
+  padding: 0;
+  display: grid;
+  gap: .35rem;
 }
-.info-list li{ display: flex; align-items: start; gap: .5rem; }
-.mt{ margin-top: .6rem; }
+
+.info-list li{ 
+  display: flex;
+  align-items: start;
+  gap: .5rem; }
+
+.mt{ 
+  margin-top: .6rem; }
+
 .chips{
-  display: flex; flex-wrap: wrap; gap: .5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
   margin: .4rem 0 1rem;
 }
+
 .chips li{
   border: 1px solid var(--border);
   background: #fff;
@@ -124,24 +139,43 @@
 }
 
 /* Inline icons (CSS-only) */
-.i{ width: 1rem; height: 1rem; display: inline-block; }
-.i-pin{ background: radial-gradient(circle at 50% 40%, #7a4a25 35%, transparent 36%) no-repeat,
-         conic-gradient(from 180deg at 50% 75%, #7a4a25 0 180deg, transparent 0) no-repeat;
-         background-size: .6rem .6rem, 1rem 1rem; background-position: 50% .1rem, 0 0; }
-.i-phone{ background: linear-gradient(#7a4a25,#7a4a25) center/60% 2px no-repeat,
-           radial-gradient(circle,#7a4a25 45%,transparent 46%) left .05rem bottom .1rem/.35rem .35rem no-repeat; }
-.i-mail{ background: conic-gradient(from 45deg,#7a4a25 0 90deg,transparent 0) left top/50% 50% no-repeat,
-          conic-gradient(from -45deg,#7a4a25 0 90deg,transparent 0) right top/50% 50% no-repeat,
-          linear-gradient(#7a4a25,#7a4a25) bottom/100% 2px no-repeat; }
-.i-time{ background: radial-gradient(circle at 50% 50%, transparent 40%, #7a4a25 41% 43%, transparent 44%) no-repeat,
-          linear-gradient(#7a4a25,#7a4a25) center/2px 45% no-repeat,
-          linear-gradient(#7a4a25,#7a4a25) 60% 42%/18% 2px no-repeat; border-radius: 50%; }
-.i-send{ background: conic-gradient(from -45deg,#fff 0 90deg,transparent 0) right/60% 60% no-repeat;
-          filter: drop-shadow(0 0 0 #fff); }
+.i{
+   width: 1rem;
+   height: 1rem;
+   display: inline-block; }
+
+.i-pin{
+  background: radial-gradient(circle at 50% 40%, #7a4a25 35%, transparent 36%) no-repeat,
+  conic-gradient(from 180deg at 50% 75%, #7a4a25 0 180deg, transparent 0) no-repeat;
+  background-size: .6rem .6rem, 1rem 1rem; background-position: 50% .1rem, 0 0; }
+
+.i-phone{
+   background: linear-gradient(#7a4a25,#7a4a25) center/60% 2px no-repeat,
+   radial-gradient(circle,#7a4a25 45%,transparent 46%) left .05rem bottom .1rem/.35rem .35rem no-repeat; }
+
+.i-mail{ 
+  background: conic-gradient(from 45deg,#7a4a25 0 90deg,transparent 0) left top/50% 50% no-repeat,
+  conic-gradient(from -45deg,#7a4a25 0 90deg,transparent 0) right top/50% 50% no-repeat,
+  linear-gradient(#7a4a25,#7a4a25) bottom/100% 2px no-repeat; }
+
+.i-time{ 
+  background: radial-gradient(circle at 50% 50%, transparent 40%, #7a4a25 41% 43%, transparent 44%) no-repeat,
+  linear-gradient(#7a4a25,#7a4a25) center/2px 45% no-repeat,
+  linear-gradient(#7a4a25,#7a4a25) 60% 42%/18% 2px no-repeat; border-radius: 50%; }
+
+.i-send{ 
+  background: conic-gradient(from -45deg,#fff 0 90deg,transparent 0) right/60% 60% no-repeat;
+  filter: drop-shadow(0 0 0 #fff); }
 
 /* FAQ */
 .faq{
-  display: grid; gap: .8rem; margin-top: 1rem;
+  display: grid; 
+  gap: .8rem; 
+  margin-top: 1rem;
 }
-.faq-item{ padding: .8rem 1rem; }
-.faq summary{ cursor: pointer; font-weight: 700; }
+.faq-item{ 
+  padding: .8rem 1rem; }
+
+.faq summary{ 
+  cursor: pointer; 
+  font-weight: 700; }
