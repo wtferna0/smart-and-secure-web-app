@@ -25,7 +25,7 @@ export default function Navbar(){
         </nav>
 
         <nav className="nav-right">
-          {/* Show Admin entry only for admins */}
+          {/* Admin entry only for admins */}
           {user?.role === "admin" && (
             <NavLink className={active} to="/admin">Admin</NavLink>
           )}
@@ -35,12 +35,15 @@ export default function Navbar(){
             <NavLink className={active} to="/profile">My Profile</NavLink>
           )}
 
-          {/* Cart is always available */}
+          {/* Cart always available */}
           <button className="btn" onClick={()=>setOpen(true)}>Cart</button>
 
           {/* Auth buttons */}
           {!user && (
-            <NavLink className="btn btn-primary" to="/login">Login</NavLink>
+            <>
+              <NavLink className="btn" to="/signup">Sign up</NavLink>
+              <NavLink className="btn btn-primary" to="/login">Login</NavLink>
+            </>
           )}
           {user && (
             <button

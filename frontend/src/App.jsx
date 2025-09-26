@@ -16,6 +16,7 @@ import About from "./pages/About.jsx";
 import Contact from "./pages/Contact.jsx";
 import Play from "./pages/Play.jsx";
 import Login from "./pages/auth/Login.jsx";
+import Signup from "./pages/auth/Signup.jsx"; // <-- NEW
 import Profile from "./pages/user/Profile.jsx";
 import Checkout from "./pages/Checkout.jsx";
 
@@ -41,6 +42,7 @@ export default function App() {
               <Route path="/contact" element={<Contact />} />
               <Route path="/play" element={<Play />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} /> {/* NEW */}
               <Route path="/checkout" element={<Checkout />} />
 
               {/* Customer-only */}

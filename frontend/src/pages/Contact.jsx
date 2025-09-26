@@ -81,10 +81,10 @@ export default function Contact(){
         <aside className="card side">
           <h3>Contact Information</h3>
           <ul className="info-list">
-            <li><span className="i i-pin" /> 123 Innovation Street, Tech District, Downtown</li>
-            <li><span className="i i-phone" /> (555) 123-BREW</li>
+            <li><span className="i i-pin" /> 288 Sri Jayawardenepura Mawatha, Sri Jayawardenepura Kotte</li>
+            <li><span className="i i-phone" /> (011)1234567</li>
             <li><span className="i i-mail" /> hello@qwikbrew.com</li>
-            <li><span className="i i-time" /> Mon–Sun: 7:00 AM – 9:00 PM</li>
+            <li><span className="i i-time" /> Mon–Sun: 9:00 AM – 9:00 PM</li>
           </ul>
 
           <h4 className="mt">Quick Info</h4>
