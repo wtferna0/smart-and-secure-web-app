@@ -279,8 +279,8 @@ if DB_ENGINE == "mysql":
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.mysql",  # Use MySQL engine
-            "NAME": os.getenv("DB_NAME", "qwikbrew"),  # Your MySQL DB name
-            "USER": os.getenv("DB_USER", "cafe_admin"),  # Your MySQL DB user
+            "NAME": os.getenv("DB_NAME", "cafe_db"),  # Your MySQL DB name
+            "USER": os.getenv("DB_USER", "qwik_user"),  # Your MySQL DB user
             "PASSWORD": os.getenv("DB_PASSWORD", "123456789"),  # Your MySQL DB password
             "HOST": os.getenv("DB_HOST", "localhost"),  # MySQL host (localhost or IP)
             "PORT": os.getenv("DB_PORT", "8000"),  # MySQL port (default: 3306)

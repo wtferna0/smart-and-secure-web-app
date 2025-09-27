@@ -17,7 +17,6 @@ export default function Signup(){
   async function submit(e){
     e.preventDefault();
     setErr("");
-
     if (pass.length < 6) return setErr("Password must be at least 6 characters.");
     if (pass !== confirm) return setErr("Passwords do not match.");
 

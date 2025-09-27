@@ -1,8 +1,12 @@
 import React, { useState } from "react";
 import "./profile.css";
+import { useAuth } from "../../context/AuthContext.jsx";
 
 export default function Profile(){
+  const { user } = useAuth();
   const [tab, setTab] = useState("profile");
+
+  // Demo data (static for now)
   const loyalty = { points: 1250, tier: "Bronze" };
   const orders = [
     { id:"QB-1234", date:"2024-01-15", items:"Caramel Macchiato, Chocolate Chip Cookie", total:7.9, points:39, status:"Completed" },
@@ -15,16 +19,30 @@ export default function Profile(){
     { code:"FREELATTE", desc:"Free latte with any purchase", exp:"2024-01-30", status:"Available" },
     { code:"BIRTHDAY20", desc:"20% off birthday treat", exp:"2024-03-20", status:"Used" },
   ];
+
   const nextRewardAt = 1500;
   const pct = Math.min(100, Math.round((loyalty.points/nextRewardAt)*100));
 
+  const displayName  = user?.name  || "Customer";
+  const displayEmail = user?.email || "";
+
   return (
     <section className="profile">
-      <div className="banner card"><div className="avatar">👤</div><div className="who"><strong>Sarah Johnson</strong><div className="muted">sarah.johnson@email.com • Member since March 2024</div></div></div>
+      <div className="banner card">
+        <div className="avatar">👤</div>
+        <div className="who">
+          <strong>{displayName}</strong>
+          <div className="muted">
+            {displayEmail || "—"} • Member since 2024
+          </div>
+        </div>
+      </div>
 
       <div className="tabbar">
         {["profile","orders","loyalty","rewards"].map(t=>(
-          <button key={t} className={tab===t?"active":""} onClick={()=>setTab(t)}>{t[0].toUpperCase()+t.slice(1)}</button>
+          <button key={t} className={tab===t?"active":""} onClick={()=>setTab(t)}>
+            {t[0].toUpperCase()+t.slice(1)}
+          </button>
         ))}
       </div>
 
@@ -46,7 +64,14 @@ export default function Profile(){
             <thead><tr><th>Order ID</th><th>Date</th><th>Items</th><th>Total</th><th>Points</th><th>Status</th></tr></thead>
             <tbody>
               {orders.map(o=>(
-                <tr key={o.id}><td>{o.id}</td><td>{o.date}</td><td>{o.items}</td><td>${o.total}</td><td>+{o.points}</td><td><span className="badge ok">Completed</span></td></tr>
+                <tr key={o.id}>
+                  <td>{o.id}</td>
+                  <td>{o.date}</td>
+                  <td>{o.items}</td>
+                  <td>${o.total}</td>
+                  <td>+{o.points}</td>
+                  <td><span className="badge ok">{o.status}</span></td>
+                </tr>
               ))}
             </tbody>
           </table>
@@ -76,7 +101,10 @@ export default function Profile(){
           <ul className="rw-list">
             {rewards.map(r=>(
               <li key={r.code} className={`rw ${r.status==="Available"?"ok":"used"}`}>
-                <div><strong>{r.code}</strong><div className="muted small">{r.desc}<br/>Expires: {r.exp}</div></div>
+                <div>
+                  <strong>{r.code}</strong>
+                  <div className="muted small">{r.desc}<br/>Expires: {r.exp}</div>
+                </div>
                 <span className={`rw-badge ${r.status==="Available"?"ok":"used"}`}>{r.status}</span>
               </li>
             ))}

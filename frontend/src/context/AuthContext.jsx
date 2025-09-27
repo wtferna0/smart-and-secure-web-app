@@ -3,8 +3,8 @@ import React, { createContext, useContext, useEffect, useMemo, useState } from "
 const AuthCtx = createContext(null);
 
 // LocalStorage keys (demo only)
-const LS_USER = "auth_user";     // current signed-in user
-const LS_USERS = "auth_users";   // simple user registry (demo)
+const LS_USER  = "auth_user";   // current signed-in user
+const LS_USERS = "auth_users";  // simple user registry (demo)
 
 function readUsers() {
   try {
@@ -30,15 +30,9 @@ export function AuthProvider({ children }) {
     } catch {}
   }, []);
 
-  // DEMO: Login (kept as-is: any email/password + role picker)
-  const login = (role, info = {}) => {
-    const next = { role, ...info };
-    setUser(next);
-    localStorage.setItem(LS_USER, JSON.stringify(next));
-  };
-
-  // DEMO: Register (creates a user record then logs them in)
-  // For production: call your backend API instead of localStorage.
+  /** DEMO: Register (creates a user record then logs them in). 
+   *  In production call your backend API with hashed passwords.
+   */
   const register = ({ name, email, password, role = "customer" }) => {
     const users = readUsers();
     const exists = users.some(u => u.email?.toLowerCase() === email?.toLowerCase());
@@ -47,7 +41,7 @@ export function AuthProvider({ children }) {
       err.code = "EMAIL_IN_USE";
       throw err;
     }
-    const record = { name, email, password, role }; // NOTE: plain password ONLY for demo
+    const record = { name, email, password, role }; // plain password for demo only
     users.push(record);
     writeUsers(users);
 
@@ -57,12 +51,40 @@ export function AuthProvider({ children }) {
     localStorage.setItem(LS_USER, JSON.stringify(next));
   };
 
+  /** ✅ NEW: Login with email/password by validating against saved users */
+  const loginWithCredentials = (email, password) => {
+    const users = readUsers();
+    const found = users.find(u => u.email?.toLowerCase() === email?.toLowerCase());
+    if (!found) {
+      const err = new Error("No account found with this email.");
+      err.code = "NO_SUCH_USER";
+      throw err;
+    }
+    if (found.password !== password) {
+      const err = new Error("Incorrect password.");
+      err.code = "BAD_PASSWORD";
+      throw err;
+    }
+    // success — sign in with stored role & name
+    const next = { role: found.role, name: found.name, email: found.email };
+    setUser(next);
+    localStorage.setItem(LS_USER, JSON.stringify(next));
+    return next;
+  };
+
+  /** Keep a generic logout */
   const logout = () => {
     setUser(null);
     localStorage.removeItem(LS_USER);
   };
 
-  const value = useMemo(() => ({ user, login, register, logout }), [user]);
+  const value = useMemo(() => ({
+    user,
+    register,
+    loginWithCredentials,
+    logout
+  }), [user]);
+
   return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>;
 }
 
