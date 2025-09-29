@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import "./checkout.css";
 import { useCart } from "../context/CartContext.jsx";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext.jsx";
 
 const VALID_CODES = [
   { code:"SAVE10", type:"percent", value:10, label:"10% off" },
@@ -11,10 +12,15 @@ const VALID_CODES = [
 
 export default function Checkout(){
   const { items, total, clear } = useCart();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
-  // pretend the user is logged in and has some points (replace with API later)
-  const user = { name: "Sarah Johnson", email: "sarah.johnson@email.com", loyaltyPoints: 300 };
+  // derive display values from the signed-in user (safe fallbacks for guests)
+  const displayName   = user?.name  || "Guest";
+  const displayEmail  = user?.email || "";
+  // demo: if you don’t store points yet, fall back to 300 so UI works
+  const loyaltyPoints = Number.isFinite(user?.loyaltyPoints) ? user.loyaltyPoints : 300;
+
   const [usePoints, setUsePoints] = useState(false);
   const [promo, setPromo] = useState("");
   const [applied, setApplied] = useState(null);
@@ -32,7 +38,7 @@ export default function Checkout(){
   }, [applied, subTotal]);
 
   // basic rule: 1 point = ₹1 (adjust to your policy)
-  const maxPointsRedeemable = Math.min(user.loyaltyPoints, subTotal - promoDiscount);
+  const maxPointsRedeemable = Math.min(loyaltyPoints, subTotal - promoDiscount);
   const pointsDiscount = useMemo(()=>{
     if(!usePoints) return 0;
     return maxPointsRedeemable;
@@ -51,8 +57,7 @@ export default function Checkout(){
   }
 
   function mockPay(){
-    // Here you would initialize PayHere with merchant_id, return_url, cancel_url, notify_url...
-    // For now we just simulate a successful payment.
+    // Replace with real PayHere init later
     setTimeout(()=>{
       setStage("paid");
       clear(); // empty cart after payment
@@ -76,9 +81,9 @@ export default function Checkout(){
       <section className="checkout">
         <h1>Payment Successful 🎉</h1>
         <div className="card c-pad">
-          <p>Thank you, <strong>{user.name}</strong>! Your order <strong>{orderId}</strong> has been placed.</p>
+          <p>Thank you, <strong>{displayName}</strong>! Your order <strong>{orderId}</strong> has been placed.</p>
           <ul className="ok-list">
-            <li>We’ve emailed a receipt to {user.email} (demo).</li>
+            <li>We’ve emailed a receipt to {displayEmail || "your email"} (demo).</li>
             <li>Your loyalty points will update after pickup (per FR-14).</li>
             <li>Track it anytime in <a href="/profile">My Profile → Orders</a>.</li>
           </ul>
@@ -100,8 +105,8 @@ export default function Checkout(){
         <div className="card c-pad">
           <h3>Contact Details</h3>
           <div className="form-grid">
-            <label>Full Name<input defaultValue={user.name}/></label>
-            <label>Email<input type="email" defaultValue={user.email}/></label>
+            <label>Full Name<input defaultValue={displayName}/></label>
+            <label>Email<input type="email" defaultValue={displayEmail}/></label>
             <label>Phone<input placeholder="+94 ..." /></label>
           </div>
 
@@ -113,7 +118,7 @@ export default function Checkout(){
 
           <h3 style={{marginTop:".8rem"}}>Loyalty Points</h3>
           <div className="loy-row">
-            <div>Available: <strong>{user.loyaltyPoints} pts</strong></div>
+            <div>Available: <strong>{loyaltyPoints} pts</strong></div>
             <label className="row">
               <input
                 type="checkbox"

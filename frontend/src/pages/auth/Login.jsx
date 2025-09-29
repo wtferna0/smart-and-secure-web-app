@@ -1,30 +1,66 @@
 import React, { useState } from "react";
-import "./auth.css";
+import "./login.css";
+import { useAuth } from "../../context/AuthContext.jsx";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 export default function Login(){
-  const [tab, setTab] = useState("signin");
-  const [f,setF] = useState({ name:"", email:"", password:"" });
+  const { loginWithCredentials } = useAuth();
+  const [email, setEmail] = useState("");
+  const [pass, setPass]   = useState("");
+  const [err, setErr]     = useState("");
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const from = location.state?.from?.pathname;
 
   function submit(e){
     e.preventDefault();
-    alert((tab==="signin"?"Signed in":"Account created")+" (placeholder).");
+    setErr("");
+    console.log("came");
+    try {
+      const signedIn = loginWithCredentials(email, pass);
+      // Redirect: prefer where they tried to go, else role home
+      if (from) return navigate(from, { replace: true });
+      if (signedIn.role === "admin") return navigate("/admin", { replace: true });
+      if (signedIn.role === "customer") return navigate("/profile", { replace: true });
+      return navigate("/", { replace: true });
+    } catch (e) {
+      setErr(e.message || "Login failed.");
+    }
   }
 
   return (
-    <section>
-      <h1>Welcome to Brew & Bytes</h1>
-      <div className="tabs">
-        <button className={tab==="signin"?"active":""} onClick={()=>setTab("signin")}>Sign in</button>
-        <button className={tab==="signup"?"active":""} onClick={()=>setTab("signup")}>Sign up</button>
+    <section className="login">
+      <h1>Welcome back</h1>
+      <div className="card c-pad" style={{ maxWidth: 520 }}>
+        <form onSubmit={submit} className="grid" style={{ gap: 10 }}>
+          <label style={{ display:"grid", gap:6 }}>
+            Email
+            <input
+              type="email"
+              value={email}
+              onChange={e=>setEmail(e.target.value)}
+              placeholder="you@email.com"
+              required
+            />
+          </label>
+          <label style={{ display:"grid", gap:6 }}>
+            Password
+            <input
+              type="password"
+              value={pass}
+              onChange={e=>setPass(e.target.value)}
+              placeholder="••••••••"
+              required
+            />
+          </label>
+          {err && <div className="bad">{err}</div>}
+          <button className="btn btn-primary" type="submit">Sign In</button>
+          <div className="muted small">
+            Don’t have an account? <Link to="/signup">Create one</Link>
+          </div>
+        </form>
       </div>
-
-      <form className="auth-form card" onSubmit={submit}>
-        {tab==="signup" && (<label>Name<input required value={f.name} onChange={e=>setF({...f, name:e.target.value})}/></label>)}
-        <label>Email<input type="email" required value={f.email} onChange={e=>setF({...f, email:e.target.value})}/></label>
-        <label>Password<input type="password" required value={f.password} onChange={e=>setF({...f, password:e.target.value})}/></label>
-        <button className="btn btn-primary">{tab==="signin"?"Sign In":"Create account"}</button>
-        <p className="muted">Demo credentials: any email and password</p>
-      </form>
     </section>
   );
 }

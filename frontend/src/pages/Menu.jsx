@@ -153,7 +153,7 @@ export default function Menu(){
                 </div>
                 <div className="muted small">Stock: {it.stock}</div>
                 <div className="row mc-foot">
-                  <div className="price">₹{it.price}</div>
+                  <div className="price">Rs{it.price}</div>
                   <button className="btn add" onClick={()=>add({id:it.id,name:it.name,price:it.price})}>🛒 Add</button>
                 </div>
               </div>
