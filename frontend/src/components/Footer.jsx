@@ -1,9 +1,9 @@
 import React from "react";
 import "./Footer.css";
 
-export default function Footer(){
+export default function Footer() {
   return (
-    <footer className="footer">
+    <footer className="footer" role="contentinfo" aria-label="Site footer">
       <div className="f-inner">
         <div>© {new Date().getFullYear()} QWIK BREW</div>
         <div className="muted">Made with ❤️ for great coffee.</div>

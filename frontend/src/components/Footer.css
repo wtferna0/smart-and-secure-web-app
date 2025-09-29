@@ -1,2 +1,40 @@
-.footer{ margin-top:24px; border-top:1px solid var(--border); background:#fff }
-.f-inner{ max-width:1200px; margin:0 auto; padding:12px 16px; display:flex; align-items:center; justify-content:space-between }
+/* --- Layout glue to keep footer at the bottom on short pages --- */
+/* Make the top-level React app (the first child of #root) a flex column */
+#root > * {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Footer sits at the end of that column */
+.footer {
+  margin-top: auto;                /* pushes footer to bottom */
+  border-top: 1px solid var(--border, #e5e5e5);
+  background: #fff;
+}
+
+/* Inner container */
+.f-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* Subtle secondary text */
+.muted {
+  color: var(--ink-sub, #64748b);
+  font-size: 0.9rem;
+}
+
+/* Small-screen stacking */
+@media (max-width: 560px) {
+  .f-inner {
+    flex-direction: column;
+    text-align: center;
+    gap: 6px;
+  }
+}

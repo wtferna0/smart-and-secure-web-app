@@ -1,74 +1,193 @@
-/* src/components/Navbar.css */
-
-/* container */
-.nav {
+/* ====== Shell ====== */
+.nav{
   position: sticky;
   top: 0;
   z-index: 50;
   background: #fff;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border, #e6e6e6);
 }
-
-/* inner row */
-.nav-inner {
+.nav-inner{
   max-width: 1200px;
   margin: 0 auto;
-  padding: .6rem 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 12px;
+  padding: 10px 16px;
 }
 
-/* brand */
-.brand {
+/* ====== Brand ====== */
+.brand{
   display: flex;
   align-items: center;
-  gap: .6rem;
+  gap: 10px;
   text-decoration: none;
-  font-weight: 800;
-  color: #4b2e19;
-  letter-spacing: .3px;
+  color: inherit;
+}
+.logo{
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  background: #7a4d25;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 18px;
+}
+.brand-txt{
+  line-height: 1.05;
+}
+.brand-txt small{
+  display: block;
+  font-size: .78rem;
+  color: #6b6b6b;
+  white-space: nowrap;
 }
 
-/* left and right groups */
-.nav-left,
-.nav-right {
+/* ====== Links (desktop) ====== */
+.nav-left{
   display: flex;
   align-items: center;
-  gap: .8rem;
+  gap: 10px;
 }
-
-/* links */
-.nav-link {
-  text-decoration: none;
-  color: #333;
-  padding: .4rem .6rem;
+.nav-link{
+  padding: 6px 10px;
   border-radius: 999px;
+  text-decoration: none;
+  color: inherit;
+  white-space: nowrap;
 }
-
-.nav-link.active {
+.nav-link.active{
   background: #f0ebe6;
   font-weight: 800;
   color: #7a4d25;
 }
 
-/* buttons (reuse your global .btn if you have it; these are safe defaults) */
-.btn {
-  padding: .4rem .7rem;
-  border: 1px solid var(--border);
-  border-radius: 10px;
+/* ====== Right actions ====== */
+.nav-right{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn{
+  border: 1px solid var(--border, #e6e6e6);
   background: #fff;
+  padding: 6px 12px;
+  border-radius: 10px;
   cursor: pointer;
 }
-
-.btn-primary {
-  background: #7a4d25;
-  border-color: #7a4d25;
+.btn-primary{
+  background: #8a1d2d;
   color: #fff;
+  border-color: #8a1d2d;
+}
+.btn:focus{ outline: 2px solid #d7cbbf; outline-offset: 2px; }
+
+/* width helpers */
+.w-full{ width: 100%; }
+
+/* ====== Hamburger (mobile toggle) ====== */
+.hamburger{
+  display: none; /* shown on mobile */
+  width: 44px;
+  height: 44px;
+  padding: 10px;
+  border: 1px solid var(--border, #e6e6e6);
+  border-radius: 10px;
+  background: #fff;
+}
+.hamburger span{
+  display: block;
+  width: 100%;
+  height: 2px;
+  background: #222;
+  margin: 5px 0;
+  transition: transform .25s ease, opacity .25s ease;
+}
+.hamburger.is-open span:nth-child(1){ transform: translateY(7px) rotate(45deg); }
+.hamburger.is-open span:nth-child(2){ opacity: 0; }
+.hamburger.is-open span:nth-child(3){ transform: translateY(-7px) rotate(-45deg); }
+
+/* ====== Mobile menu panel ====== */
+.mm{
+  position: fixed;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 290px;
+  background: #fff;
+  border-left: 1px solid var(--border, #e6e6e6);
+  transform: translateX(100%);
+  transition: transform .25s ease;
+  z-index: 60;
+}
+.mm.open{ transform: translateX(0); }
+.mm-inner{
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  height: 100%;
+}
+.mm-head{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 14px;
+  border-bottom: 1px solid var(--border, #e6e6e6);
+}
+.mm-title{ font-weight: 800; }
+.mm-close{ padding: 6px 10px; }
+
+.mm-section{
+  padding: 10px 14px;
+  display: grid;
+  gap: 6px;
+}
+.mm-section .nav-link{
+  display: block;
+  padding: 10px 12px;
+  border-radius: 10px;
+}
+.mm-section .nav-link.active{
+  background: #f0ebe6;
+  color: #7a4d25;
 }
 
-/* responsive: hide left nav links on narrow screens */
+.mm-auth{
+  padding: 10px 14px 16px;
+  display: grid;
+  gap: 8px;
+  border-top: 1px solid var(--border, #e6e6e6);
+}
+
+/* Backdrop */
+.mm-backdrop{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.32);
+  z-index: 55;
+}
+
+/* ====== Responsive rules ====== */
+@media (max-width: 980px){
+  /* slightly shrink brand linewrap */
+  .brand-txt small{ display: none; }
+}
 @media (max-width: 860px){
-  .nav-left { display: none; }
+  .nav-left{
+    display: none; /* hide desktop links */
+  }
+  .hamburger{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  /* tighten right side spacing */
+  .nav-right .sign-btn{ display: none; } /* keep Login primary; Sign up inside panel */
+  .brand strong{ font-size: 0.98rem; }
+}
+@media (max-width: 420px){
+  .nav-inner{ padding: 10px 12px; }
+  .login-btn, .logout-btn, .cart-btn{
+    padding: 6px 10px;
+  }
 }
