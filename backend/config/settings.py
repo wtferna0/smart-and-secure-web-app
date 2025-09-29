@@ -2,20 +2,23 @@
 # import os
 # from datetime import timedelta
 
-# # --- .env --------------------------------------------------------------------
-# try:
-#     from dotenv import load_dotenv
-#     load_dotenv()
-# except Exception:
-#     pass
-
 # # --- Paths -------------------------------------------------------------------
 # BASE_DIR = Path(__file__).resolve().parent.parent
 
+# # --- .env --------------------------------------------------------------------
+# try:
+#     from dotenv import load_dotenv
+#     load_dotenv(BASE_DIR / ".env")  # load from project .env explicitly
+# except Exception:
+#     pass
+
 # # --- Core Django --------------------------------------------------------------
 # SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-insecure")
-# DEBUG = os.getenv("DJANGO_DEBUG", "0") == "1"
-# ALLOWED_HOSTS = [h.strip() for h in os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",") if h.strip()]
+# # accept 1/true/yes/on
+# DEBUG = os.getenv("DJANGO_DEBUG", "0").strip().lower() in ("1", "true", "yes", "on")
+# ALLOWED_HOSTS = [
+#     h.strip() for h in os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",") if h.strip()
+# ]
 
 # INSTALLED_APPS = [
 #     # Django
@@ -25,10 +28,10 @@
 #     "django.contrib.sessions",
 #     "django.contrib.messages",
 #     "django.contrib.staticfiles",
-
 #     # Third-party
 #     "rest_framework",
 #     "rest_framework_simplejwt",
+#     "rest_framework_simplejwt.token_blacklist",
 #     "drf_spectacular",
 #     "corsheaders",
 #     "django_filters",
@@ -81,23 +84,21 @@
 # if DB_ENGINE == "mysql":
 #     DATABASES = {
 #         "default": {
-#             "ENGINE": "django.db.backends.mysql",
-#             "NAME": os.getenv("DB_NAME", "qwikbrew"),
-#             "USER": os.getenv("DB_USER", "qwik_user"),
-#             "PASSWORD": os.getenv("DB_PASSWORD", "StrongLocalPW123!"),
-#             "HOST": os.getenv("DB_HOST", "127.0.0.1"),
-#             "PORT": os.getenv("DB_PORT", "3306"),
-#             "OPTIONS": {"charset": "utf8mb4"},
+#             "ENGINE": "django.db.backends.mysql",  # Use MySQL engine
+#             "NAME": os.getenv("DB_NAME", "qwikbrew"),  # Your MySQL DB name
+#             "USER": os.getenv("DB_USER", "cafe_admin"),  # Your MySQL DB user
+#             "PASSWORD": os.getenv("DB_PASSWORD", "123456789"),  # Your MySQL DB password
+#             "HOST": os.getenv("DB_HOST", "localhost"),  # MySQL host (localhost or IP)
+#             "PORT": os.getenv("DB_PORT", "8000"),  # MySQL port (default: 3306)
 #         }
 #     }
 # else:
 #     DATABASES = {
 #         "default": {
-#             "ENGINE": "django.db.backends.sqlite3",
-#             "NAME": BASE_DIR / "db.sqlite3",
+#             "ENGINE": "django.db.backends.sqlite3",  # Default to SQLite if not MySQL
+#             "NAME": BASE_DIR / "db.sqlite3",  # SQLite location
 #         }
 #     }
-
 # # --- i18n / tz ---------------------------------------------------------------
 # LANGUAGE_CODE = "en-us"
 # TIME_ZONE = "Asia/Colombo"   # store in UTC, display Colombo
@@ -115,7 +116,9 @@
 # REST_FRAMEWORK = {
 #     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 #     "DEFAULT_AUTHENTICATION_CLASSES": [
+#         # Keep JWT as primary; add SessionAuth for browsable API/admin convenience
 #         "rest_framework_simplejwt.authentication.JWTAuthentication",
+#         "rest_framework.authentication.SessionAuthentication",
 #     ],
 #     "DEFAULT_PERMISSION_CLASSES": [
 #         "rest_framework.permissions.AllowAny",
@@ -123,11 +126,22 @@
 #     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
 #     "PAGE_SIZE": 20,
 #     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
+#     "DEFAULT_THROTTLE_CLASSES": [
+#         "rest_framework.throttling.AnonRateThrottle",
+#         "rest_framework.throttling.UserRateThrottle",
+#     ],
+#     "DEFAULT_THROTTLE_RATES": {
+#         "anon": "60/min",
+#         "user": "120/min",
+#         "crowdmeter_burst": "300/min",
+#     },
 # }
 
 # SIMPLE_JWT = {
 #     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
 #     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+#     "ROTATE_REFRESH_TOKENS": True,
+#     "BLACKLIST_AFTER_ROTATION": True,
 #     "AUTH_HEADER_TYPES": ("Bearer",),
 # }
 
@@ -139,6 +153,8 @@
 
 # # --- CORS / CSRF -------------------------------------------------------------
 # _raw_cors = os.getenv("CORS_ALLOWED_ORIGINS", "")
+# # comma-separated list in .env, e.g. http://localhost:3000,http://127.0.0.1:5173
+# CORS_ALLOW_ALL_ORIGINS = True
 # CORS_ALLOWED_ORIGINS = [o.strip() for o in _raw_cors.split(",") if o.strip()]
 # if DEBUG and not CORS_ALLOWED_ORIGINS:
 #     CORS_ALLOWED_ORIGINS = [
@@ -146,6 +162,8 @@
 #         "http://127.0.0.1:5173",
 #         "http://localhost:3000",
 #         "http://127.0.0.1:3000",
+#         "http://localhost:8000",
+#         "http://127.0.0.1:8000",
 #     ]
 # CORS_ALLOW_CREDENTIALS = True
 
@@ -181,16 +199,27 @@
 # LOGGING = {
 #     "version": 1,
 #     "disable_existing_loggers": False,
-#     "handlers": {
-#         "console": {"class": "logging.StreamHandler"},
-#     },
+#     "handlers": {"console": {"class": "logging.StreamHandler"}},
 #     "root": {"handlers": ["console"], "level": "INFO"},
 #     "loggers": {
-#         "django.db.backends": {
-#             "handlers": ["console"],
-#             "level": "DEBUG" if DEBUG else "INFO",
-#         }
+#         "django.db.backends": {"handlers": ["console"], "level": "DEBUG" if DEBUG else "INFO"}
 #     },
+# }
+
+# CROWD_METER = {
+#     "MODE": "heuristic",   # change to "ml" after training (step 6)
+#     "WINDOW_MINUTES": 30,
+#     "BIN_MINUTES": 5,      # feature time-bins
+#     "ACTIVE_STATUSES": ["Accepted", "Preparing", "Ready"],
+#     "STATUS_WEIGHTS": {"Accepted": 1.0, "Preparing": 0.8, "Ready": 0.4},
+#     "PEOPLE_PER_ORDER": 1.3,
+#     "CAPACITY": 50,
+#     "SMOOTHING_ALPHA": 0.35,
+#     "ORDER_MODEL": "orders.Order",
+#     "STATUS_FIELD": "status",
+#     "CREATED_FIELD": "placed_at",
+#     "MODEL_PATH": BASE_DIR / "crowd" / "model_assets" / "crowd_model.pkl",
+#     "TRAIN_LOOKBACK_DAYS": 14,
 # }
 
 from pathlib import Path
@@ -226,10 +255,10 @@ INSTALLED_APPS = [
     # Third-party
     "rest_framework",
     "rest_framework_simplejwt",
-    "drf_spectacular",
     "corsheaders",
+    "drf_spectacular",
     "django_filters",
-
+   
     # Your apps
     "accounts",
     "catalog.apps.CatalogConfig",
@@ -320,6 +349,11 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 20,
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
+
+    "DEFAULT_THROTTLE_RATES": {
+        "crowdmeter_burst": "10/min",   # allow 10 requests per minute
+        "crowdmeter_sustained": "100/hour",  # if you also have sustained
+    }
 }
 
 SIMPLE_JWT = {
@@ -336,6 +370,8 @@ SPECTACULAR_SETTINGS = {
 
 # --- CORS / CSRF -------------------------------------------------------------
 _raw_cors = os.getenv("CORS_ALLOWED_ORIGINS", "")
+
+CORS_ALLOW_ALL_ORIGINS = True
 # comma-separated list in .env, e.g. http://localhost:3000,http://127.0.0.1:5173
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = [o.strip() for o in _raw_cors.split(",") if o.strip()]
@@ -348,6 +384,9 @@ if DEBUG and not CORS_ALLOWED_ORIGINS:
         "http://localhost:8000",
         "http://127.0.0.1:8000",
     ]
+
+
+
 CORS_ALLOW_CREDENTIALS = True
 
 _raw_csrf = os.getenv("CSRF_TRUSTED_ORIGINS", "")
@@ -387,4 +426,20 @@ LOGGING = {
     "loggers": {
         "django.db.backends": {"handlers": ["console"], "level": "DEBUG" if DEBUG else "INFO"}
     },
+}
+
+CROWD_METER = {
+    "MODE": "heuristic",   # change to "ml" after training (step 6)
+    "WINDOW_MINUTES": 30,
+    "BIN_MINUTES": 5,      # feature time-bins
+    "ACTIVE_STATUSES": ["Accepted", "Preparing", "Ready"],
+    "STATUS_WEIGHTS": {"Accepted": 1.0, "Preparing": 0.8, "Ready": 0.4},
+    "PEOPLE_PER_ORDER": 1.3,
+    "CAPACITY": 50,
+    "SMOOTHING_ALPHA": 0.35,
+    "ORDER_MODEL": "orders.Order",
+    "STATUS_FIELD": "status",
+    "CREATED_FIELD": "placed_at",
+    "MODEL_PATH": BASE_DIR / "crowd" / "model_assets" / "crowd_model.pkl",
+    "TRAIN_LOOKBACK_DAYS": 14,
 }

@@ -10,7 +10,7 @@ class UserProfile(models.Model):
     contact_email = models.EmailField(blank=True, null=True)
 
     # Loyalty inside user
-    points_balance = models.IntegerField(default=0)
+    points_balance = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     paid_order_count = models.IntegerField(default=0)
     default_currency = models.CharField(max_length=3, default="LKR")
     marketing_opt_in = models.BooleanField(default=False)

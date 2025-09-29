@@ -1,15 +1,30 @@
+# crowd/models.py
 from django.db import models
+from django.utils import timezone
+from django.conf import settings
+from datetime import timedelta
 from django.contrib.auth.models import User
 
 class CrowdSnapshot(models.Model):
-    set_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
-    as_of = models.DateTimeField(auto_now_add=True)
-    level = models.PositiveSmallIntegerField(default=1)   # 1..5
-    orders_in_last_30m = models.IntegerField(default=0)
-    note = models.CharField(max_length=255, blank=True, null=True)
-
-    class Meta:
-        indexes = [models.Index(fields=["as_of"])]
+    timestamp = models.DateTimeField(default=timezone.now, db_index=True)
+    level = models.PositiveIntegerField()
+    source = models.CharField(max_length=16, default="system")  # system|manual|ml
 
     def __str__(self):
-        return f"{self.as_of:%Y-%m-%d %H:%M} -> {self.level}"
+        return f"{self.level} @ {self.timestamp} ({self.source})"
+
+class CrowdOverride(models.Model):
+    staff = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    level = models.PositiveIntegerField()
+    created_at = models.DateTimeField(default=timezone.now, db_index=True)
+    ttl_minutes = models.PositiveIntegerField(default=30)
+
+    @property
+    def expires_at(self):
+        return self.created_at + timedelta(minutes=self.ttl_minutes)
+
+    def is_active(self):
+        return timezone.now() < self.expires_at
+
+    def __str__(self):
+        return f"Override {self.level} by {self.staff} until {self.expires_at:%H:%M}"
