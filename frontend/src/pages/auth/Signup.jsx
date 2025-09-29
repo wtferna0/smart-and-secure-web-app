@@ -1,3 +1,4 @@
+// Signup.jsx - Updated version
 import React, { useState } from "react";
 import "./login.css";
 import { useAuth } from "../../context/AuthContext.jsx";
@@ -11,24 +12,25 @@ export default function Signup(){
   const [email, setEmail] = useState("");
   const [pass, setPass] = useState("");
   const [confirm, setConfirm] = useState("");
-  const [role, setRole] = useState("customer");   // Usually customers sign up; admins are added by staff
   const [err, setErr] = useState("");
+  const [loading, setLoading] = useState(false);
 
   async function submit(e){
     e.preventDefault();
     setErr("");
-
+    
     if (pass.length < 6) return setErr("Password must be at least 6 characters.");
     if (pass !== confirm) return setErr("Passwords do not match.");
 
+    setLoading(true);
+
     try {
-      // DEMO: stores in localStorage and logs you in
-      register({ name, email, password: pass, role });
-      // Redirect based on role
-      if (role === "admin") navigate("/admin", { replace: true });
-      else navigate("/profile", { replace: true });
-    } catch (e) {
-      setErr(e.message || "Sign up failed.");
+      await register({ name, email, password: pass });
+      navigate("/profile", { replace: true });
+    } catch (error) {
+      setErr(error.message);
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -39,37 +41,58 @@ export default function Signup(){
         <form onSubmit={submit} className="grid" style={{ gap: 10 }}>
           <label style={{ display:"grid", gap:6 }}>
             Full Name
-            <input value={name} onChange={e=>setName(e.target.value)} placeholder="Your name" required/>
+            <input 
+              value={name} 
+              onChange={e=>setName(e.target.value)} 
+              placeholder="Your name" 
+              required
+              disabled={loading}
+            />
           </label>
           <label style={{ display:"grid", gap:6 }}>
             Email
-            <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@email.com" required/>
+            <input 
+              type="email" 
+              value={email} 
+              onChange={e=>setEmail(e.target.value)} 
+              placeholder="you@email.com" 
+              required
+              disabled={loading}
+            />
           </label>
           <div className="row" style={{ gap: 10 }}>
             <label style={{ display:"grid", gap:6, flex:1 }}>
               Password
-              <input type="password" value={pass} onChange={e=>setPass(e.target.value)} placeholder="••••••••" required/>
+              <input 
+                type="password" 
+                value={pass} 
+                onChange={e=>setPass(e.target.value)} 
+                placeholder="••••••••" 
+                required
+                disabled={loading}
+              />
             </label>
             <label style={{ display:"grid", gap:6, flex:1 }}>
               Confirm
-              <input type="password" value={confirm} onChange={e=>setConfirm(e.target.value)} placeholder="••••••••" required/>
-            </label>
-          </div>
-
-          {/* Optional role choice; keep visible for demo. Hide in production (admins created by staff). */}
-          <div className="row" style={{ gap: 10 }}>
-            <label className="row" style={{ gap: 6 }}>
-              <input type="radio" name="role" value="customer" checked={role==="customer"} onChange={()=>setRole("customer")} />
-              Customer
-            </label>
-            <label className="row" style={{ gap: 6 }}>
-              <input type="radio" name="role" value="admin" checked={role==="admin"} onChange={()=>setRole("admin")} />
-              Admin/Staff (demo)
+              <input 
+                type="password" 
+                value={confirm} 
+                onChange={e=>setConfirm(e.target.value)} 
+                placeholder="••••••••" 
+                required
+                disabled={loading}
+              />
             </label>
           </div>
 
           {err && <div className="bad">{err}</div>}
-          <button className="btn btn-primary" type="submit">Create Account</button>
+          <button 
+            className="btn btn-primary" 
+            type="submit"
+            disabled={loading}
+          >
+            {loading ? "Creating Account..." : "Create Account"}
+          </button>
 
           <div className="muted small">
             Already have an account? <Link to="/login">Sign in</Link>

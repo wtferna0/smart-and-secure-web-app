@@ -1,73 +1,148 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+// AuthContext.jsx
+import React, { createContext, useState, useContext, useEffect } from 'react';
 
-const AuthCtx = createContext(null);
+const AuthContext = createContext();
 
-// LocalStorage keys (demo only)
-const LS_USER = "auth_user";     // current signed-in user
-const LS_USERS = "auth_users";   // simple user registry (demo)
-
-function readUsers() {
-  try {
-    const raw = localStorage.getItem(LS_USERS);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
-function writeUsers(list) {
-  try { localStorage.setItem(LS_USERS, JSON.stringify(list)); } catch {}
+export function useAuth() {
+  return useContext(AuthContext);
 }
 
 export function AuthProvider({ children }) {
-  // user: null | { role: 'customer'|'admin', name?:string, email?:string }
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // load once from localStorage so auth survives refresh
+  const API_BASE = 'https://cafe-app.duckdns.org/api/auth';
+
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(LS_USER);
-      if (saved) setUser(JSON.parse(saved));
-    } catch {}
+    // Check if user is logged in on app start
+    const token = localStorage.getItem('access_token');
+    if (token) {
+      fetchUserData();
+    } else {
+      setLoading(false);
+    }
   }, []);
 
-  // DEMO: Login (kept as-is: any email/password + role picker)
-  const login = (role, info = {}) => {
-    const next = { role, ...info };
-    setUser(next);
-    localStorage.setItem(LS_USER, JSON.stringify(next));
+  const fetchUserData = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(`${API_BASE}/me/`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      if (response.ok) {
+        const userData = await response.json();
+        setUser(userData);
+      } else {
+        logout();
+      }
+    } catch (error) {
+      console.error('Failed to fetch user data:', error);
+      logout();
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // DEMO: Register (creates a user record then logs them in)
-  // For production: call your backend API instead of localStorage.
-  const register = ({ name, email, password, role = "customer" }) => {
-    const users = readUsers();
-    const exists = users.some(u => u.email?.toLowerCase() === email?.toLowerCase());
-    if (exists) {
-      const err = new Error("An account with this email already exists.");
-      err.code = "EMAIL_IN_USE";
-      throw err;
-    }
-    const record = { name, email, password, role }; // NOTE: plain password ONLY for demo
-    users.push(record);
-    writeUsers(users);
+  const login = async (email, password) => {
+    try {
+      const response = await fetch(`${API_BASE}/token/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: email, // Django expects username, using email as username
+          password: password,
+        }),
+      });
 
-    // auto-login after signup
-    const next = { role, name, email };
-    setUser(next);
-    localStorage.setItem(LS_USER, JSON.stringify(next));
+      if (!response.ok) {
+        throw new Error('Login failed');
+      }
+
+      const data = await response.json();
+      
+      // Store tokens
+      localStorage.setItem('access_token', data.access);
+      localStorage.setItem('refresh_token', data.refresh);
+      
+      // Set user data
+      setUser(data.user);
+      
+      return data;
+    } catch (error) {
+      throw new Error('Login failed: ' + error.message);
+    }
+  };
+
+  const register = async (userData) => {
+    try {
+      const response = await fetch(`${API_BASE}/register/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: userData.email, // Using email as username
+          email: userData.email,
+          password: userData.password,
+          first_name: userData.name.split(' ')[0] || '',
+          last_name: userData.name.split(' ').slice(1).join(' ') || '',
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Registration failed');
+      }
+
+      const data = await response.json();
+      
+      // Auto-login after registration
+      localStorage.setItem('access_token', data.access);
+      localStorage.setItem('refresh_token', data.refresh);
+      setUser(data.user);
+      
+      return data;
+    } catch (error) {
+      throw new Error('Registration failed: ' + error.message);
+    }
   };
 
   const logout = () => {
+    const refreshToken = localStorage.getItem('refresh_token');
+    
+    // Call logout endpoint to blacklist token
+    if (refreshToken) {
+      fetch(`${API_BASE}/logout/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ refresh: refreshToken }),
+      }).catch(console.error);
+    }
+    
+    // Clear local storage
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
     setUser(null);
-    localStorage.removeItem(LS_USER);
   };
 
-  const value = useMemo(() => ({ user, login, register, logout }), [user]);
-  return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>;
-}
+  const value = {
+    user,
+    login,
+    register,
+    logout,
+    loading,
+  };
 
-export function useAuth() {
-  const ctx = useContext(AuthCtx);
-  if (!ctx) throw new Error("useAuth must be used inside <AuthProvider>");
-  return ctx;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
 }

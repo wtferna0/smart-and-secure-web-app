@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./home.css";
 import { useCart } from "../context/CartContext.jsx";
+import { api } from "../lib/api.js"; // added for crowd meter
 
 // Use LKR since your menu is priced for Sri Lanka
 const rupee = new Intl.NumberFormat("en-LK", {
@@ -11,9 +12,13 @@ const rupee = new Intl.NumberFormat("en-LK", {
 
 export default function Home() {
   const [trending, setTrending] = useState([]);
-  const { add } = useCart(); // ← fixed destructuring on one line
+  const { add } = useCart();
+
+  // 🔹 Crowd state
+  const [crowd, setCrowd] = useState({ state: "Loading...", confidence: 0 });
 
   useEffect(() => {
+    // Trending items
     setTrending([
       {
         id: "masala-chai",
@@ -46,10 +51,25 @@ export default function Home() {
         desc: "Rich chocolate drink topped with cocoa and warmth.",
       },
     ]);
+
+    // 🔹 Fetch crowd predictions from backend
+    api.getPredictions()
+      .then((data) => {
+        // expected backend response: { state: "Normal", confidence: 0.55 }
+        setCrowd({
+          state: data.state,
+          confidence: data.confidence,
+        });
+      })
+      .catch((err) => {
+        console.error("Failed to load crowd data:", err);
+        setCrowd({ state: "Unknown", confidence: 0 });
+      });
   }, []);
 
   return (
     <section className="home">
+      {/* Hero Section */}
       <div className="hero card">
         <div className="hero-copy">
           <h1>Welcome to QWIK BREW</h1>
@@ -66,7 +86,9 @@ export default function Home() {
         <div className="hero-art" aria-hidden="true" />
       </div>
 
+      {/* Info Row */}
       <div className="info-row">
+        {/* Hours */}
         <div className="card info">
           <div className="info-head">
             <span className="dot red">⏱</span>
@@ -85,20 +107,30 @@ export default function Home() {
           <div className="status ok">● Open Now</div>
         </div>
 
+        {/* 🔹 Crowd Meter */}
         <div className="card info">
           <div className="info-head">
             <span className="dot brown">📊</span>
             <h3>Crowd Now</h3>
           </div>
           <div className="level">
-            <span className="pill">Normal</span>
+            <span className={`pill ${crowd.state.toLowerCase()}`}>
+              {crowd.state}
+            </span>
           </div>
           <div className="bar">
-            <span style={{ width: "55%" }} />
+            <span style={{ width: `${crowd.confidence * 100}%` }} />
           </div>
-          <div className="muted small">Good atmosphere</div>
+          <div className="muted small">
+            {crowd.state === "Quiet" && "Plenty of space available"}
+            {crowd.state === "Normal" && "Good atmosphere"}
+            {crowd.state === "Busy" && "Might be crowded"}
+            {crowd.state === "Unknown" && "No data available"}
+            {crowd.state === "Loading..." && "Fetching live data..."}
+          </div>
         </div>
 
+        {/* Amenities */}
         <div className="card info">
           <div className="info-head">
             <span className="dot blue">📶</span>
@@ -112,6 +144,7 @@ export default function Home() {
         </div>
       </div>
 
+      {/* Trending Items */}
       <div className="trending-head">
         <h2 className="section-title">
           <span className="twinkle">✦</span> Trending Items
@@ -147,6 +180,7 @@ export default function Home() {
         ))}
       </div>
 
+      {/* CTA */}
       <div className="cta card">
         <h3>Ready to Order?</h3>
         <p>

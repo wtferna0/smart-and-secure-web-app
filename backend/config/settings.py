@@ -15,8 +15,10 @@ except Exception:
 # --- Core Django --------------------------------------------------------------
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-insecure")
 # accept 1/true/yes/on
-DEBUG = False
-ALLOWED_HOSTS = ["*"]
+DEBUG = os.getenv("DJANGO_DEBUG", "0").strip().lower() in ("1", "true", "yes", "on")
+ALLOWED_HOSTS = [
+    h.strip() for h in os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1,51.20.9.106,cafe-app.duckdns.org,172.31.34.189").split(",") if h.strip()
+]
 
 INSTALLED_APPS = [
     # Django
@@ -45,9 +47,9 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
-    "django.contrib.sessions.middleware.SessionMiddleware",  
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",  # keep CORS before CommonMiddleware
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -80,21 +82,15 @@ ASGI_APPLICATION = "config.asgi.application"
 DB_ENGINE = os.getenv("DB_ENGINE", "mysql").lower()
 if DB_ENGINE == "mysql":
     DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.mysql",  # Use MySQL engine
-            "NAME": os.getenv("DB_NAME", "cafedb"),  # Your MySQL DB name
-            "USER": os.getenv("DB_USER", "admin"),  # Your MySQL DB user
-            "PASSWORD": os.getenv("DB_PASSWORD", "050812Km*"),  # Your MySQL DB password
-            "HOST": os.getenv("DB_HOST", "cafedb.cxkqk02iupbr.eu-north-1.rds.amazonaws.com"),  # MySQL host (localhost or IP)
-            "PORT": os.getenv("DB_PORT", "3306"),  # MySQL port (default: 3306)
-		"OPTIONS": {
-			"connect_timeout": 60,
-			'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-			'charset': 'utf8mb4',
-		},
-		"CONN_MAX_AGE": 300,
-        }
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'cafedb',
+        'USER': 'admin',
+        'PASSWORD': '050812Km*',
+        'HOST': 'cafedb.cxkqk02iupbr.eu-north-1.rds.amazonaws.com',
+        'PORT': '3306',
     }
+}
 else:
     DATABASES = {
         "default": {
@@ -129,6 +125,11 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 20,
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
+
+    "DEFAULT_THROTTLE_RATES": {
+        "crowdmeter_burst": "10/min",   # allow 10 requests per minute
+        "crowdmeter_sustained": "100/hour",  # if you also have sustained
+    }
 }
 
 SIMPLE_JWT = {
@@ -145,6 +146,7 @@ SPECTACULAR_SETTINGS = {
 
 # --- CORS / CSRF -------------------------------------------------------------
 _raw_cors = os.getenv("CORS_ALLOWED_ORIGINS", "")
+
 # comma-separated list in .env, e.g. http://localhost:3000,http://127.0.0.1:5173
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = [o.strip() for o in _raw_cors.split(",") if o.strip()]
@@ -156,7 +158,12 @@ if DEBUG and not CORS_ALLOWED_ORIGINS:
         "http://127.0.0.1:3000",
         "http://localhost:8000",
         "http://127.0.0.1:8000",
+        "http://cafe-app.duckdns.org",
+        "https://cafe-app.duckdns.org",
     ]
+
+
+
 CORS_ALLOW_CREDENTIALS = True
 
 _raw_csrf = os.getenv("CSRF_TRUSTED_ORIGINS", "")
@@ -167,8 +174,12 @@ if DEBUG and not CSRF_TRUSTED_ORIGINS:
         "http://127.0.0.1:5173",
         "http://localhost:3000",
         "http://127.0.0.1:3000",
-	"http://51.21.191.69",
-	"https://51.21.191.69",
+        "http://51.20.9.106:8000",
+        "http://51.20.9.106:3000",
+        "https://51.20.9.106:8000",
+        "https://51.20.9.106:3000",
+        "https://cafe-app.duckdns.org",
+        "http://cafe-app.duckdns.org",
     ]
 
 # --- Password validators (useful for admin/prod) -----------------------------
@@ -198,4 +209,20 @@ LOGGING = {
     "loggers": {
         "django.db.backends": {"handlers": ["console"], "level": "DEBUG" if DEBUG else "INFO"}
     },
+}
+
+CROWD_METER = {
+    "MODE": "heuristic",   # change to "ml" after training (step 6)
+    "WINDOW_MINUTES": 30,
+    "BIN_MINUTES": 5,      # feature time-bins
+    "ACTIVE_STATUSES": ["Accepted", "Preparing", "Ready"],
+    "STATUS_WEIGHTS": {"Accepted": 1.0, "Preparing": 0.8, "Ready": 0.4},
+    "PEOPLE_PER_ORDER": 1.3,
+    "CAPACITY": 50,
+    "SMOOTHING_ALPHA": 0.35,
+    "ORDER_MODEL": "orders.Order",
+    "STATUS_FIELD": "status",
+    "CREATED_FIELD": "placed_at",
+    "MODEL_PATH": BASE_DIR / "crowd" / "model_assets" / "crowd_model.pkl",
+    "TRAIN_LOOKBACK_DAYS": 14,
 }

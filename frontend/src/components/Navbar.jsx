@@ -25,13 +25,13 @@ export default function Navbar(){
         </nav>
 
         <nav className="nav-right">
-          {/* Admin entry only for admins */}
-          {user?.role === "admin" && (
+          {/* Admin entry only for staff users */}
+          {user?.is_staff && (
             <NavLink className={active} to="/admin">Admin</NavLink>
           )}
 
-          {/* Customer profile */}
-          {user?.role === "customer" && (
+          {/* Profile for all logged-in users */}
+          {user && (
             <NavLink className={active} to="/profile">My Profile</NavLink>
           )}
 

@@ -31,5 +31,8 @@ async function request(path, { method = "GET", body, headers } = {}) {
 export const api = {
   startPuzzle:    (payload) => request("/api/start-puzzle/",    { method: "POST", body: payload }),
   completePuzzle: (payload) => request("/api/complete-puzzle/", { method: "POST", body: payload }),
-  getSession:     (id)      => request(`/api/sessions/${id}/`),
+  getSession:     (id)      => request(`/api/session/${id}/`),
+
+  getPredictions: ()        => request("/api/crowd/current/"), 
+  sendFeedback:   (payload) => request("/api/crowd/override/", { method: "POST", body: payload }),
 };

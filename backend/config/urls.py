@@ -10,7 +10,7 @@ urlpatterns = [
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="docs"),
 
-
+    path('api/auth/', include('accounts.urls')),
     path("api/", include("chatbot.urls")),
     path("api/", include("puzzle.urls")),
 ]
