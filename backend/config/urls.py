@@ -20,4 +20,6 @@ urlpatterns = [
     path('api/loyalty/points/', PointsView.as_view(), name='check-points'),
     path('api/loyalty/redeem/', RedeemPointsView.as_view(), name='redeem-points'),
     path('api/promos/apply/', ApplyPromoView.as_view(), name='apply-promo'),
+    path("api/", include("payments.urls")),
+
 ]

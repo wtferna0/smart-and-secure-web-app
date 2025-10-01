@@ -1,227 +1,3 @@
-# from pathlib import Path
-# import os
-# from datetime import timedelta
-
-# # --- Paths -------------------------------------------------------------------
-# BASE_DIR = Path(__file__).resolve().parent.parent
-
-# # --- .env --------------------------------------------------------------------
-# try:
-#     from dotenv import load_dotenv
-#     load_dotenv(BASE_DIR / ".env")  # load from project .env explicitly
-# except Exception:
-#     pass
-
-# # --- Core Django --------------------------------------------------------------
-# SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-insecure")
-# # accept 1/true/yes/on
-# DEBUG = os.getenv("DJANGO_DEBUG", "0").strip().lower() in ("1", "true", "yes", "on")
-# ALLOWED_HOSTS = [
-#     h.strip() for h in os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",") if h.strip()
-# ]
-
-# INSTALLED_APPS = [
-#     # Django
-#     "django.contrib.admin",
-#     "django.contrib.auth",
-#     "django.contrib.contenttypes",
-#     "django.contrib.sessions",
-#     "django.contrib.messages",
-#     "django.contrib.staticfiles",
-#     # Third-party
-#     "rest_framework",
-#     "rest_framework_simplejwt",
-#     "rest_framework_simplejwt.token_blacklist",
-#     "drf_spectacular",
-#     "corsheaders",
-#     "django_filters",
-
-#     # Your apps
-#     "accounts",
-#     "catalog.apps.CatalogConfig",
-#     "orders.apps.OrdersConfig",
-#     "payments",
-#     "loyalty",
-#     "crowd",
-#     "chatbot",
-#     "puzzle",
-# ]
-
-# MIDDLEWARE = [
-#     "django.middleware.security.SecurityMiddleware",
-#     "django.contrib.sessions.middleware.SessionMiddleware",
-#     "corsheaders.middleware.CorsMiddleware",  # keep CORS before CommonMiddleware
-#     "django.middleware.common.CommonMiddleware",
-#     "django.middleware.csrf.CsrfViewMiddleware",
-#     "django.contrib.auth.middleware.AuthenticationMiddleware",
-#     "django.contrib.messages.middleware.MessageMiddleware",
-#     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-# ]
-
-# ROOT_URLCONF = "config.urls"
-
-# TEMPLATES = [
-#     {
-#         "BACKEND": "django.template.backends.django.DjangoTemplates",
-#         "DIRS": [],
-#         "APP_DIRS": True,
-#         "OPTIONS": {
-#             "context_processors": [
-#                 "django.template.context_processors.debug",
-#                 "django.template.context_processors.request",
-#                 "django.contrib.auth.context_processors.auth",
-#                 "django.contrib.messages.context_processors.messages",
-#             ],
-#         },
-#     },
-# ]
-
-# WSGI_APPLICATION = "config.wsgi.application"
-# ASGI_APPLICATION = "config.asgi.application"
-
-# # --- Database ----------------------------------------------------------------
-# DB_ENGINE = os.getenv("DB_ENGINE", "mysql").lower()
-# if DB_ENGINE == "mysql":
-#     DATABASES = {
-#         "default": {
-#             "ENGINE": "django.db.backends.mysql",  # Use MySQL engine
-#             "NAME": os.getenv("DB_NAME", "qwikbrew"),  # Your MySQL DB name
-#             "USER": os.getenv("DB_USER", "cafe_admin"),  # Your MySQL DB user
-#             "PASSWORD": os.getenv("DB_PASSWORD", "123456789"),  # Your MySQL DB password
-#             "HOST": os.getenv("DB_HOST", "localhost"),  # MySQL host (localhost or IP)
-#             "PORT": os.getenv("DB_PORT", "8000"),  # MySQL port (default: 3306)
-#         }
-#     }
-# else:
-#     DATABASES = {
-#         "default": {
-#             "ENGINE": "django.db.backends.sqlite3",  # Default to SQLite if not MySQL
-#             "NAME": BASE_DIR / "db.sqlite3",  # SQLite location
-#         }
-#     }
-# # --- i18n / tz ---------------------------------------------------------------
-# LANGUAGE_CODE = "en-us"
-# TIME_ZONE = "Asia/Colombo"   # store in UTC, display Colombo
-# USE_I18N = True
-# USE_TZ = True
-
-# # --- Static / Media ----------------------------------------------------------
-# STATIC_URL = "static/"
-# STATIC_ROOT = BASE_DIR / "staticfiles"
-# MEDIA_URL = "media/"
-# MEDIA_ROOT = BASE_DIR / "media"
-# DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-# # --- DRF / OpenAPI / Auth ----------------------------------------------------
-# REST_FRAMEWORK = {
-#     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
-#     "DEFAULT_AUTHENTICATION_CLASSES": [
-#         # Keep JWT as primary; add SessionAuth for browsable API/admin convenience
-#         "rest_framework_simplejwt.authentication.JWTAuthentication",
-#         "rest_framework.authentication.SessionAuthentication",
-#     ],
-#     "DEFAULT_PERMISSION_CLASSES": [
-#         "rest_framework.permissions.AllowAny",
-#     ],
-#     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
-#     "PAGE_SIZE": 20,
-#     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
-#     "DEFAULT_THROTTLE_CLASSES": [
-#         "rest_framework.throttling.AnonRateThrottle",
-#         "rest_framework.throttling.UserRateThrottle",
-#     ],
-#     "DEFAULT_THROTTLE_RATES": {
-#         "anon": "60/min",
-#         "user": "120/min",
-#         "crowdmeter_burst": "300/min",
-#     },
-# }
-
-# SIMPLE_JWT = {
-#     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
-#     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
-#     "ROTATE_REFRESH_TOKENS": True,
-#     "BLACKLIST_AFTER_ROTATION": True,
-#     "AUTH_HEADER_TYPES": ("Bearer",),
-# }
-
-# SPECTACULAR_SETTINGS = {
-#     "TITLE": "QwikBrew API",
-#     "VERSION": "0.1.0",
-#     "SERVE_INCLUDE_SCHEMA": False,
-# }
-
-# # --- CORS / CSRF -------------------------------------------------------------
-# _raw_cors = os.getenv("CORS_ALLOWED_ORIGINS", "")
-# # comma-separated list in .env, e.g. http://localhost:3000,http://127.0.0.1:5173
-# CORS_ALLOW_ALL_ORIGINS = True
-# CORS_ALLOWED_ORIGINS = [o.strip() for o in _raw_cors.split(",") if o.strip()]
-# if DEBUG and not CORS_ALLOWED_ORIGINS:
-#     CORS_ALLOWED_ORIGINS = [
-#         "http://localhost:5173",
-#         "http://127.0.0.1:5173",
-#         "http://localhost:3000",
-#         "http://127.0.0.1:3000",
-#         "http://localhost:8000",
-#         "http://127.0.0.1:8000",
-#     ]
-# CORS_ALLOW_CREDENTIALS = True
-
-# _raw_csrf = os.getenv("CSRF_TRUSTED_ORIGINS", "")
-# CSRF_TRUSTED_ORIGINS = [o.strip() for o in _raw_csrf.split(",") if o.strip()]
-# if DEBUG and not CSRF_TRUSTED_ORIGINS:
-#     CSRF_TRUSTED_ORIGINS = [
-#         "http://localhost:5173",
-#         "http://127.0.0.1:5173",
-#         "http://localhost:3000",
-#         "http://127.0.0.1:3000",
-#     ]
-
-# # --- Password validators (useful for admin/prod) -----------------------------
-# AUTH_PASSWORD_VALIDATORS = [
-#     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
-#     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator", "OPTIONS": {"min_length": 8}},
-#     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
-#     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
-# ]
-
-# # --- Security for production -------------------------------------------------
-# if not DEBUG:
-#     SECURE_BROWSER_XSS_FILTER = True
-#     SECURE_CONTENT_TYPE_NOSNIFF = True
-#     SESSION_COOKIE_SECURE = True
-#     CSRF_COOKIE_SECURE = True
-#     SECURE_HSTS_SECONDS = 31536000
-#     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-#     SECURE_HSTS_PRELOAD = True
-
-# # --- Logging (handy while developing) ---------------------------------------
-# LOGGING = {
-#     "version": 1,
-#     "disable_existing_loggers": False,
-#     "handlers": {"console": {"class": "logging.StreamHandler"}},
-#     "root": {"handlers": ["console"], "level": "INFO"},
-#     "loggers": {
-#         "django.db.backends": {"handlers": ["console"], "level": "DEBUG" if DEBUG else "INFO"}
-#     },
-# }
-
-# CROWD_METER = {
-#     "MODE": "heuristic",   # change to "ml" after training (step 6)
-#     "WINDOW_MINUTES": 30,
-#     "BIN_MINUTES": 5,      # feature time-bins
-#     "ACTIVE_STATUSES": ["Accepted", "Preparing", "Ready"],
-#     "STATUS_WEIGHTS": {"Accepted": 1.0, "Preparing": 0.8, "Ready": 0.4},
-#     "PEOPLE_PER_ORDER": 1.3,
-#     "CAPACITY": 50,
-#     "SMOOTHING_ALPHA": 0.35,
-#     "ORDER_MODEL": "orders.Order",
-#     "STATUS_FIELD": "status",
-#     "CREATED_FIELD": "placed_at",
-#     "MODEL_PATH": BASE_DIR / "crowd" / "model_assets" / "crowd_model.pkl",
-#     "TRAIN_LOOKBACK_DAYS": 14,
-# }
-
 from pathlib import Path
 import os
 from datetime import timedelta
@@ -232,7 +8,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # --- .env --------------------------------------------------------------------
 try:
     from dotenv import load_dotenv
-    load_dotenv(BASE_DIR / ".env")  # load from project .env explicitly
+    load_dotenv(BASE_DIR / ".env", override=True)  # <— add override=True  
 except Exception:
     pass
 
@@ -308,9 +84,9 @@ if DB_ENGINE == "mysql":
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.mysql",  # Use MySQL engine
-            "NAME": os.getenv("DB_NAME", "cafe_db"),  # Your MySQL DB name
+            "NAME": os.getenv("DB_NAME", "qwikbrew"),  # Your MySQL DB name
             "USER": os.getenv("DB_USER", "qwik_user"),  # Your MySQL DB user
-            "PASSWORD": os.getenv("DB_PASSWORD", "123456789"),  # Your MySQL DB password
+            "PASSWORD": os.getenv("DB_PASSWORD", "StrongLocalPW123!"),  # Your MySQL DB password
             "HOST": os.getenv("DB_HOST", "127.0.0.1"),  # MySQL host (localhost or IP)
             "PORT": os.getenv("DB_PORT", "3306"),  # MySQL port (default: 3306)
         }
@@ -322,6 +98,7 @@ else:
             "NAME": BASE_DIR / "db.sqlite3",  # SQLite location
         }
     }
+
 # --- i18n / tz ---------------------------------------------------------------
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "Asia/Colombo"   # store in UTC, display Colombo
@@ -385,8 +162,6 @@ if DEBUG and not CORS_ALLOWED_ORIGINS:
         "http://127.0.0.1:8000",
     ]
 
-
-
 CORS_ALLOW_CREDENTIALS = True
 
 _raw_csrf = os.getenv("CSRF_TRUSTED_ORIGINS", "")
@@ -428,6 +203,7 @@ LOGGING = {
     },
 }
 
+# --- Crowd Meter -------------------------------------------------------------
 CROWD_METER = {
     "MODE": "heuristic",   # change to "ml" after training (step 6)
     "WINDOW_MINUTES": 30,
@@ -442,4 +218,19 @@ CROWD_METER = {
     "CREATED_FIELD": "placed_at",
     "MODEL_PATH": BASE_DIR / "crowd" / "model_assets" / "crowd_model.pkl",
     "TRAIN_LOOKBACK_DAYS": 14,
+}
+
+# --- PayHere Gateway ---------------------------------------------------------
+PAYHERE = {
+    "MERCHANT_ID": os.getenv("PAYHERE_MERCHANT_ID", ""),
+    "MERCHANT_SECRET": os.getenv("PAYHERE_MERCHANT_SECRET", ""),
+    "SANDBOX": os.getenv("PAYHERE_SANDBOX", "1") == "1",
+    # Gateway endpoints
+    "CHECKOUT_URL": "https://sandbox.payhere.lk/pay/checkout" if os.getenv("PAYHERE_SANDBOX", "1") == "1"
+                    else "https://www.payhere.lk/pay/checkout",
+    # Where PayHere sends customer back (no status here!)
+    "RETURN_URL": os.getenv("FRONTEND_BASE_URL", "") + "/payment/return",
+    "CANCEL_URL": os.getenv("FRONTEND_BASE_URL", "") + "/payment/cancel",
+    # Server-to-server IPN callback (MUST be publicly reachable)
+    "NOTIFY_URL": os.getenv("BACKEND_BASE_URL", "") + "/api/payhere/ipn/",
 }
