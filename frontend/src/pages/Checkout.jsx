@@ -6,7 +6,7 @@ import { useAuth } from "../context/AuthContext.jsx";
 
 const VALID_CODES = [
   { code:"SAVE10", type:"percent", value:10, label:"10% off" },
-  { code:"FREELATTE", type:"flat", value:155, label:"Free Latte (₹155)" },
+  { code:"FREELATTE", type:"flat", value:155, label:"Free Latte (Rs.155)" },
   { code:"BIRTHDAY20", type:"percent", value:20, label:"20% off birthday" },
 ];
 
@@ -37,7 +37,7 @@ export default function Checkout(){
     return 0;
   }, [applied, subTotal]);
 
-  // basic rule: 1 point = ₹1 (adjust to your policy)
+  
   const maxPointsRedeemable = Math.min(loyaltyPoints, subTotal - promoDiscount);
   const pointsDiscount = useMemo(()=>{
     if(!usePoints) return 0;
@@ -126,7 +126,7 @@ export default function Checkout(){
                 onChange={(e)=>setUsePoints(e.target.checked)}
                 disabled={maxPointsRedeemable<=0}
               />
-              Apply up to <strong>&nbsp;{maxPointsRedeemable} pts</strong> (₹1/pt)
+              Apply up to <strong>&nbsp;{maxPointsRedeemable} pts</strong> (Rs.1/pt)
             </label>
           </div>
 
@@ -148,23 +148,23 @@ export default function Checkout(){
                   <strong>{it.name}</strong>
                   <div className="muted small">Qty {it.qty}</div>
                 </div>
-                <div>₹{(it.price*it.qty).toFixed(0)}</div>
+                <div>Rs.{(it.price*it.qty).toFixed(0)}</div>
               </li>
             ))}
           </ul>
 
-          <div className="line"><span>Subtotal</span><span>₹{subTotal}</span></div>
-          <div className="line"><span>Promo</span><span>- ₹{promoDiscount}</span></div>
-          <div className="line"><span>Loyalty</span><span>- ₹{pointsDiscount}</span></div>
-          <div className="line"><span>Taxes (8%)</span><span>₹{taxes}</span></div>
-          <div className="line total"><span>Total</span><span>₹{grand}</span></div>
+          <div className="line"><span>Subtotal</span><span>Rs.{subTotal}</span></div>
+          <div className="line"><span>Promo</span><span>- Rs.{promoDiscount}</span></div>
+          <div className="line"><span>Loyalty</span><span>- Rs.{pointsDiscount}</span></div>
+          <div className="line"><span>Taxes (8%)</span><span>Rs.{taxes}</span></div>
+          <div className="line total"><span>Total</span><span>Rs.{grand}</span></div>
 
           <button
             className="btn btn-primary pay-btn"
             onClick={mockPay}
             disabled={items.length===0}
           >
-            Pay (Mock) ₹{grand}
+            Pay (Mock) Rs.{grand}
           </button>
 
           <div className="muted small" style={{marginTop:".4rem"}}>

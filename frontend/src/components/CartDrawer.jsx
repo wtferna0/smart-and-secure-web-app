@@ -19,7 +19,7 @@ export default function CartDrawer(){
           <div key={it.id} className="cart-row">
             <div className="grow">
               <div><strong>{it.name}</strong></div>
-              <div className="muted small">₹{it.price} • qty {it.qty}</div>
+              <div className="muted small">Rs.{it.price} • qty {it.qty}</div>
             </div>
             <div className="row">
               <button className="btn" onClick={()=>dec(it.id)}>-</button>
@@ -31,7 +31,7 @@ export default function CartDrawer(){
       </div>
 
       <div className="drawer-foot">
-        <div><strong>Total:</strong> ₹{total.toFixed(0)}</div>
+        <div><strong>Total:</strong> Rs.{total.toFixed(0)}</div>
         <div className="row">
           <button className="btn" onClick={clear}>Clear</button>
           <button className="btn btn-primary" disabled={items.length === 0}
