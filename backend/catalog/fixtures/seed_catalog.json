@@ -1,26 +1,965 @@
 [
-  { "model": "catalog.menucategory", "pk": 1, "fields": { "name": "Coffee", "is_active": true } },
-  { "model": "catalog.menucategory", "pk": 2, "fields": { "name": "Tea", "is_active": true } },
-
-  { "model": "catalog.menuitem", "pk": 1,
+  {
+    "model": "catalog.menucategory",
+    "pk": 1,
     "fields": {
-      "category": 1, "name": "Americano", "price": "3.50",
-      "is_active": true, "stock_qty": 50,
-      "created_at": "2025-01-01T09:00:00Z"
+      "name": "Hot Beverages",
+      "is_active": true
     }
   },
-  { "model": "catalog.menuitem", "pk": 2,
+  {
+    "model": "catalog.menucategory",
+    "pk": 2,
     "fields": {
-      "category": 1, "name": "Latte", "price": "4.20",
-      "is_active": true, "stock_qty": 30,
-      "created_at": "2025-01-01T09:00:00Z"
+      "name": "Cold Beverages",
+      "is_active": true
     }
   },
-  { "model": "catalog.menuitem", "pk": 3,
+  {
+    "model": "catalog.menucategory",
+    "pk": 3,
     "fields": {
-      "category": 2, "name": "Green Tea", "price": "2.80",
-      "is_active": true, "stock_qty": 20,
-      "created_at": "2025-01-01T09:00:00Z"
+      "name": "Cakes & Desserts",
+      "is_active": true
+    }
+  },
+  {
+    "model": "catalog.menucategory",
+    "pk": 4,
+    "fields": {
+      "name": "Cookies",
+      "is_active": true
+    }
+  },
+  {
+    "model": "catalog.menucategory",
+    "pk": 5,
+    "fields": {
+      "name": "Short-eats",
+      "is_active": true
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 1,
+    "fields": {
+      "category": 1,
+      "name": "Plain Ceylon Tea",
+      "price": "6.00",
+      "is_active": true,
+      "stock_qty": 60,
+      "rating": "4.4",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 2,
+    "fields": {
+      "category": 1,
+      "name": "Milk Tea",
+      "price": "8.00",
+      "is_active": true,
+      "stock_qty": 55,
+      "rating": "4.5",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 3,
+    "fields": {
+      "category": 1,
+      "name": "Masala Chai",
+      "price": "9.00",
+      "is_active": true,
+      "stock_qty": 45,
+      "rating": "4.7",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 4,
+    "fields": {
+      "category": 1,
+      "name": "Ginger Tea",
+      "price": "7.50",
+      "is_active": true,
+      "stock_qty": 40,
+      "rating": "4.5",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 5,
+    "fields": {
+      "category": 1,
+      "name": "Espresso (Single)",
+      "price": "7.00",
+      "is_active": true,
+      "stock_qty": 50,
+      "rating": "4.6",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 6,
+    "fields": {
+      "category": 1,
+      "name": "Americano",
+      "price": "8.50",
+      "is_active": true,
+      "stock_qty": 50,
+      "rating": "4.5",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 7,
+    "fields": {
+      "category": 1,
+      "name": "Cappuccino",
+      "price": "11.00",
+      "is_active": true,
+      "stock_qty": 48,
+      "rating": "4.6",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 8,
+    "fields": {
+      "category": 1,
+      "name": "Cafe Latte",
+      "price": "11.50",
+      "is_active": true,
+      "stock_qty": 48,
+      "rating": "4.6",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 9,
+    "fields": {
+      "category": 1,
+      "name": "Flat White",
+      "price": "12.00",
+      "is_active": true,
+      "stock_qty": 35,
+      "rating": "4.6",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 10,
+    "fields": {
+      "category": 1,
+      "name": "Caffè Mocha",
+      "price": "13.50",
+      "is_active": true,
+      "stock_qty": 32,
+      "rating": "4.7",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 11,
+    "fields": {
+      "category": 1,
+      "name": "Espresso Macchiato",
+      "price": "9.50",
+      "is_active": true,
+      "stock_qty": 30,
+      "rating": "4.5",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 12,
+    "fields": {
+      "category": 1,
+      "name": "Irish Coffee (non-alcoholic)",
+      "price": "15.00",
+      "is_active": true,
+      "stock_qty": 20,
+      "rating": "4.7",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 13,
+    "fields": {
+      "category": 1,
+      "name": "Hot Chocolate",
+      "price": "11.00",
+      "is_active": true,
+      "stock_qty": 35,
+      "rating": "4.4",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 14,
+    "fields": {
+      "category": 1,
+      "name": "Matcha Latte",
+      "price": "15.00",
+      "is_active": true,
+      "stock_qty": 25,
+      "rating": "4.5",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 15,
+    "fields": {
+      "category": 2,
+      "name": "Iced Espresso",
+      "price": "10.00",
+      "is_active": true,
+      "stock_qty": 40,
+      "rating": "4.4",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 16,
+    "fields": {
+      "category": 2,
+      "name": "Iced Americano",
+      "price": "11.00",
+      "is_active": true,
+      "stock_qty": 45,
+      "rating": "4.5",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 17,
+    "fields": {
+      "category": 2,
+      "name": "Iced Latte",
+      "price": "13.50",
+      "is_active": true,
+      "stock_qty": 45,
+      "rating": "4.6",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 18,
+    "fields": {
+      "category": 2,
+      "name": "Iced Cappuccino",
+      "price": "13.50",
+      "is_active": true,
+      "stock_qty": 40,
+      "rating": "4.6",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 19,
+    "fields": {
+      "category": 2,
+      "name": "Iced Mocha",
+      "price": "15.50",
+      "is_active": true,
+      "stock_qty": 35,
+      "rating": "4.7",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 20,
+    "fields": {
+      "category": 2,
+      "name": "Iced Caramel Macchiato",
+      "price": "16.50",
+      "is_active": true,
+      "stock_qty": 30,
+      "rating": "4.7",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 21,
+    "fields": {
+      "category": 2,
+      "name": "Iced Flat White",
+      "price": "14.50",
+      "is_active": true,
+      "stock_qty": 28,
+      "rating": "4.5",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 22,
+    "fields": {
+      "category": 2,
+      "name": "Cold Brew Coffee",
+      "price": "15.00",
+      "is_active": true,
+      "stock_qty": 25,
+      "rating": "4.6",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 23,
+    "fields": {
+      "category": 2,
+      "name": "Vanilla Sweet Cream Cold Brew",
+      "price": "16.50",
+      "is_active": true,
+      "stock_qty": 20,
+      "rating": "4.7",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 24,
+    "fields": {
+      "category": 2,
+      "name": "Coffee Frappé",
+      "price": "16.00",
+      "is_active": true,
+      "stock_qty": 30,
+      "rating": "4.6",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 25,
+    "fields": {
+      "category": 2,
+      "name": "Mocha Frappé",
+      "price": "16.50",
+      "is_active": true,
+      "stock_qty": 28,
+      "rating": "4.6",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 26,
+    "fields": {
+      "category": 2,
+      "name": "Caramel Frappé",
+      "price": "17.00",
+      "is_active": true,
+      "stock_qty": 25,
+      "rating": "4.7",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 27,
+    "fields": {
+      "category": 2,
+      "name": "Cookies & Cream Frappe",
+      "price": "17.50",
+      "is_active": true,
+      "stock_qty": 22,
+      "rating": "4.7",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 28,
+    "fields": {
+      "category": 2,
+      "name": "Affogato (Espresso + Ice Cream)",
+      "price": "15.00",
+      "is_active": true,
+      "stock_qty": 20,
+      "rating": "4.8",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 29,
+    "fields": {
+      "category": 2,
+      "name": "Vienna Iced Coffee",
+      "price": "16.00",
+      "is_active": true,
+      "stock_qty": 20,
+      "rating": "4.6",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 30,
+    "fields": {
+      "category": 2,
+      "name": "Hazelnut Iced Latte",
+      "price": "14.50",
+      "is_active": true,
+      "stock_qty": 25,
+      "rating": "4.6",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 31,
+    "fields": {
+      "category": 2,
+      "name": "Vanilla Iced Latte",
+      "price": "14.50",
+      "is_active": true,
+      "stock_qty": 25,
+      "rating": "4.6",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 32,
+    "fields": {
+      "category": 2,
+      "name": "Lemon Iced Tea",
+      "price": "9.00",
+      "is_active": true,
+      "stock_qty": 55,
+      "rating": "4.4",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 33,
+    "fields": {
+      "category": 2,
+      "name": "Peach Iced Tea",
+      "price": "10.00",
+      "is_active": true,
+      "stock_qty": 50,
+      "rating": "4.5",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 34,
+    "fields": {
+      "category": 2,
+      "name": "Iced Green Tea",
+      "price": "9.50",
+      "is_active": true,
+      "stock_qty": 45,
+      "rating": "4.3",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 35,
+    "fields": {
+      "category": 2,
+      "name": "Mint Lime Cooler",
+      "price": "9.50",
+      "is_active": true,
+      "stock_qty": 40,
+      "rating": "4.5",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 36,
+    "fields": {
+      "category": 2,
+      "name": "Faluda",
+      "price": "12.00",
+      "is_active": true,
+      "stock_qty": 35,
+      "rating": "4.6",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 37,
+    "fields": {
+      "category": 2,
+      "name": "Mango Juice (Seasonal)",
+      "price": "11.00",
+      "is_active": true,
+      "stock_qty": 30,
+      "rating": "4.6",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 38,
+    "fields": {
+      "category": 2,
+      "name": "Papaya Juice",
+      "price": "9.50",
+      "is_active": true,
+      "stock_qty": 35,
+      "rating": "4.4",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 39,
+    "fields": {
+      "category": 2,
+      "name": "Passion Fruit Juice",
+      "price": "10.00",
+      "is_active": true,
+      "stock_qty": 30,
+      "rating": "4.5",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 40,
+    "fields": {
+      "category": 2,
+      "name": "Watermelon Juice",
+      "price": "9.50",
+      "is_active": true,
+      "stock_qty": 40,
+      "rating": "4.4",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 41,
+    "fields": {
+      "category": 2,
+      "name": "King Coconut Water",
+      "price": "4.00",
+      "is_active": true,
+      "stock_qty": 50,
+      "rating": "4.5",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 42,
+    "fields": {
+      "category": 2,
+      "name": "Avocado Smoothie",
+      "price": "15.00",
+      "is_active": true,
+      "stock_qty": 25,
+      "rating": "4.6",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 43,
+    "fields": {
+      "category": 2,
+      "name": "Banana Milkshake",
+      "price": "12.00",
+      "is_active": true,
+      "stock_qty": 35,
+      "rating": "4.5",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 44,
+    "fields": {
+      "category": 2,
+      "name": "Strawberry Milkshake",
+      "price": "14.00",
+      "is_active": true,
+      "stock_qty": 30,
+      "rating": "4.6",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 45,
+    "fields": {
+      "category": 2,
+      "name": "Oreo Shake",
+      "price": "16.00",
+      "is_active": true,
+      "stock_qty": 28,
+      "rating": "4.7",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 46,
+    "fields": {
+      "category": 3,
+      "name": "Chocolate Cake (Slice)",
+      "price": "11.00",
+      "is_active": true,
+      "stock_qty": 28,
+      "rating": "4.7",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 47,
+    "fields": {
+      "category": 3,
+      "name": "Butter Cake (Slice)",
+      "price": "6.50",
+      "is_active": true,
+      "stock_qty": 35,
+      "rating": "4.4",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 48,
+    "fields": {
+      "category": 3,
+      "name": "Ribbon Cake (Slice)",
+      "price": "7.50",
+      "is_active": true,
+      "stock_qty": 30,
+      "rating": "4.5",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 49,
+    "fields": {
+      "category": 3,
+      "name": "Red Velvet (Slice)",
+      "price": "13.00",
+      "is_active": true,
+      "stock_qty": 24,
+      "rating": "4.6",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 50,
+    "fields": {
+      "category": 3,
+      "name": "Cheesecake (Slice)",
+      "price": "16.00",
+      "is_active": true,
+      "stock_qty": 22,
+      "rating": "4.6",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 51,
+    "fields": {
+      "category": 3,
+      "name": "Fudgy Brownie",
+      "price": "9.50",
+      "is_active": true,
+      "stock_qty": 40,
+      "rating": "4.6",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 52,
+    "fields": {
+      "category": 3,
+      "name": "Chocolate Biscuit Pudding",
+      "price": "9.00",
+      "is_active": true,
+      "stock_qty": 26,
+      "rating": "4.8",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 53,
+    "fields": {
+      "category": 3,
+      "name": "Watalappan",
+      "price": "9.00",
+      "is_active": true,
+      "stock_qty": 20,
+      "rating": "4.7",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 54,
+    "fields": {
+      "category": 4,
+      "name": "Chocolate Chip Cookie",
+      "price": "5.50",
+      "is_active": true,
+      "stock_qty": 60,
+      "rating": "4.5",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 55,
+    "fields": {
+      "category": 4,
+      "name": "Cashew Cookie",
+      "price": "6.00",
+      "is_active": true,
+      "stock_qty": 55,
+      "rating": "4.6",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 56,
+    "fields": {
+      "category": 4,
+      "name": "Pistacio Cookie",
+      "price": "5.50",
+      "is_active": true,
+      "stock_qty": 50,
+      "rating": "4.5",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 57,
+    "fields": {
+      "category": 4,
+      "name": "Red velvet Cookie",
+      "price": "5.00",
+      "is_active": true,
+      "stock_qty": 50,
+      "rating": "4.4",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 58,
+    "fields": {
+      "category": 4,
+      "name": "Double Chocolate Cookie",
+      "price": "6.00",
+      "is_active": true,
+      "stock_qty": 48,
+      "rating": "4.5",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 59,
+    "fields": {
+      "category": 4,
+      "name": "Coconut Macaroon",
+      "price": "5.50",
+      "is_active": true,
+      "stock_qty": 40,
+      "rating": "4.5",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 60,
+    "fields": {
+      "category": 4,
+      "name": "Peanut Butter Cookie",
+      "price": "6.00",
+      "is_active": true,
+      "stock_qty": 40,
+      "rating": "4.5",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 61,
+    "fields": {
+      "category": 4,
+      "name": "Shortbread",
+      "price": "5.50",
+      "is_active": true,
+      "stock_qty": 45,
+      "rating": "4.4",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 62,
+    "fields": {
+      "category": 5,
+      "name": "Fish Bun",
+      "price": "3.80",
+      "is_active": true,
+      "stock_qty": 70,
+      "rating": "4.5",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 63,
+    "fields": {
+      "category": 5,
+      "name": "Chicken Wrap",
+      "price": "4.50",
+      "is_active": true,
+      "stock_qty": 65,
+      "rating": "4.6",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 64,
+    "fields": {
+      "category": 5,
+      "name": "Vegetable Samosa",
+      "price": "3.50",
+      "is_active": true,
+      "stock_qty": 60,
+      "rating": "4.4",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 65,
+    "fields": {
+      "category": 5,
+      "name": "Egg Roll",
+      "price": "4.50",
+      "is_active": true,
+      "stock_qty": 55,
+      "rating": "4.5",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 66,
+    "fields": {
+      "category": 5,
+      "name": "Chicken Roll",
+      "price": "5.00",
+      "is_active": true,
+      "stock_qty": 55,
+      "rating": "4.6",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 67,
+    "fields": {
+      "category": 5,
+      "name": "Fish Cutlet",
+      "price": "2.20",
+      "is_active": true,
+      "stock_qty": 80,
+      "rating": "4.6",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 68,
+    "fields": {
+      "category": 5,
+      "name": "Chicken Cutlet",
+      "price": "2.20",
+      "is_active": true,
+      "stock_qty": 80,
+      "rating": "4.6",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 69,
+    "fields": {
+      "category": 5,
+      "name": "Sausage Bun",
+      "price": "4.20",
+      "is_active": true,
+      "stock_qty": 60,
+      "rating": "4.4",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 70,
+    "fields": {
+      "category": 5,
+      "name": "Cheese & Ham Toastie",
+      "price": "9.00",
+      "is_active": true,
+      "stock_qty": 40,
+      "rating": "4.5",
+      "created_at": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "catalog.menuitem",
+    "pk": 71,
+    "fields": {
+      "category": 5,
+      "name": "croissant",
+      "price": "2.50",
+      "is_active": true,
+      "stock_qty": 75,
+      "rating": "4.5",
+      "created_at": "2024-01-01T09:00:00Z"
     }
   }
 ]

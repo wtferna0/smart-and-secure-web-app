@@ -1,6 +1,10 @@
 from django.contrib import admin
 from django.urls import path, include
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+from django.conf import settings  # Add this import
+from django.views.generic import TemplateView
+from django.conf.urls.static import static  # Add this import
+
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -13,4 +17,9 @@ urlpatterns = [
     path('api/auth/', include('accounts.urls')),
     path("api/", include("chatbot.urls")),
     path("api/", include("puzzle.urls")),
-]
+
+    path('', TemplateView.as_view(template_name='index.html')),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

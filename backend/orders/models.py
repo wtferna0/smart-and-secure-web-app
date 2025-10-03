@@ -7,6 +7,7 @@ class Order(models.Model):
         PLACED = "PLACED"
         ACCEPTED = "ACCEPTED"
         DONE = "DONE"
+        COMPLETED = "COMPLETED"  
         FAILED = "FAILED"
         CANCELLED = "CANCELLED"
 

@@ -1,4 +1,4 @@
-// Login.jsx - Updated version
+// Login.jsx - Fixed version
 import React, { useState } from "react";
 import "./login.css";
 import { useAuth } from "../../context/AuthContext.jsx";
@@ -21,14 +21,17 @@ export default function Login(){
     setLoading(true);
 
     try {
-      await login(email, pass);
+      const result = await login(email, pass);
       
-      // Redirect user based on their role
-      if (from) {
-        navigate(from, { replace: true });
+      // Check if user is staff and redirect accordingly
+      if (result.isStaff) {
+        console.log('➡️ Redirecting staff user to admin');
+        navigate("/admin", { replace: true });
       } else {
-        navigate("/profile", { replace: true });
+        console.log('➡️ Redirecting regular user to:', from);
+        navigate(from, { replace: true });
       }
+      
     } catch (error) {
       setErr(error.message);
     } finally {

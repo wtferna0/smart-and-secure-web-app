@@ -25,10 +25,21 @@ export default function Signup(){
     setLoading(true);
 
     try {
-      await register({ name, email, password: pass });
+      const result = await register({ name, email, password: pass });
+      
+      // If we get here, registration was successful (even with fallback)
+      console.log('✅ Registration completed, navigating to profile');
       navigate("/profile", { replace: true });
+      
     } catch (error) {
-      setErr(error.message);
+      console.error('💥 Registration failed:', error);
+      
+      // Check if user might have been created anyway
+      if (error.message.includes('500') || error.message.includes('fallback')) {
+        setErr("Account may have been created. Try logging in manually.");
+      } else {
+        setErr(error.message);
+      }
     } finally {
       setLoading(false);
     }

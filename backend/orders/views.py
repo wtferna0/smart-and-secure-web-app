@@ -1,22 +1,4 @@
-# from rest_framework import viewsets, mixins
-# from rest_framework.response import Response
-# from rest_framework.decorators import action
-# from .models import Order
-# from .serializers import OrderCreateSerializer, OrderSerializer
-
-# class OrderViewSet(mixins.CreateModelMixin,
-#                    mixins.RetrieveModelMixin,
-#                    viewsets.GenericViewSet):
-#     queryset = Order.objects.all().order_by("-placed_at")
-
-#     def get_serializer_class(self):
-#         return OrderCreateSerializer if self.action == "create" else OrderSerializer
-
-#     @action(detail=True, methods=["get"])
-#     def status(self, request, pk=None):
-#         order = self.get_object()
-#         return Response({"status": order.status})
-
+# orders/views.py
 from django.db import transaction
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
@@ -26,53 +8,98 @@ from .models import Order, OrderItem, OrderStatusEvent
 from .serializers import OrderCreateSerializer, OrderSerializer
 from catalog.models import MenuItem
 
-
 class OrderViewSet(mixins.CreateModelMixin,
                    mixins.RetrieveModelMixin,
+                   mixins.ListModelMixin,
+                   mixins.UpdateModelMixin,  # ✅ Add this
                    viewsets.GenericViewSet):
-    """
-    - POST /api/orders/           -> create order (uses OrderCreateSerializer)
-    - GET  /api/orders/{id}/      -> retrieve order
-    - GET  /api/orders/{id}/status/ -> {"status": "..."}
-    - POST /api/orders/{id}/cancel/ -> cancel & restore stock (only if not PAID/FULFILLED)
-    """
-    queryset = Order.objects.all().order_by("-placed_at")
+    serializer_class = OrderSerializer
+
+    def get_queryset(self):
+        if self.request.user.is_authenticated:
+            base_queryset = Order.objects.prefetch_related(
+                'orderitem_set',
+                'orderitem_set__menu_item',
+                'customer'
+            ).select_related('customer')
+            
+            if self.request.user.is_staff:
+                orders = base_queryset.all().order_by("-placed_at")
+            else:
+                orders = base_queryset.filter(customer=self.request.user).order_by("-placed_at")
+            
+            return orders
+        else:
+            return Order.objects.none()
 
     def get_serializer_class(self):
-        return OrderCreateSerializer if self.action == "create" else OrderSerializer
+        if self.action == "create":
+            return OrderCreateSerializer
+        return OrderSerializer
 
-    @action(detail=True, methods=["get"])
-    def status(self, request, pk=None):
-        order = self.get_object()
-        return Response({"status": order.status})
-
-    @action(detail=True, methods=["post"])
-    @transaction.atomic
-    def cancel(self, request, pk=None):
-        """
-        Cancel an order and restore item stock.
-        Allowed only when order is not already PAID or FULFILLED or CANCELLED.
-        """
-        order: Order = self.get_object()
-        if order.status in [Order.Status.PAID, Order.Status.FULFILLED, Order.Status.CANCELLED]:
-            return Response(
-                {"detail": f"Cannot cancel from status {order.status}."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # restore stock
-        items = OrderItem.objects.select_related("menu_item").filter(order=order)
-        for it in items:
-            # lock the row for safety
-            mi = MenuItem.objects.select_for_update().get(pk=it.menu_item_id)
-            mi.stock_qty = mi.stock_qty + it.qty
-            mi.save(update_fields=["stock_qty"])
-
-        prev = order.status
-        order.status = Order.Status.CANCELLED
-        order.save(update_fields=["status"])
-
-        OrderStatusEvent.objects.create(
-            order=order, from_status=prev, to_status=order.status, note="Cancelled by API"
+    def create(self, request, *args, **kwargs):
+        create_serializer = OrderCreateSerializer(
+            data=request.data, 
+            context={'request': request}
         )
-        return Response({"ok": True, "status": order.status})
+        create_serializer.is_valid(raise_exception=True)
+        order = create_serializer.save()
+        
+        response_serializer = OrderSerializer(order, context=self.get_serializer_context())
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+
+    # ✅ Add this method to handle status updates
+    @action(detail=True, methods=['patch'])
+    def update_status(self, request, pk=None):
+        order = self.get_object()
+        new_status = request.data.get('status')
+        
+        if not new_status:
+            return Response({"error": "Status is required"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Validate the status
+        valid_statuses = dict(Order.Status.choices)
+        if new_status not in valid_statuses:
+            return Response({"error": f"Invalid status. Valid choices: {list(valid_statuses.keys())}"}, 
+                          status=status.HTTP_400_BAD_REQUEST)
+        
+        # Create status event record
+        OrderStatusEvent.objects.create(
+            order=order,
+            changed_by=request.user,
+            from_status=order.status,
+            to_status=new_status,
+            note=f"Status updated via admin dashboard"
+        )
+        
+        # Update order status
+        order.status = new_status
+        order.save(update_fields=['status', 'updated_at'])
+        
+        serializer = self.get_serializer(order)
+        return Response(serializer.data)
+
+    # ✅ Or simply override the update method to handle status changes
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        
+        # Handle status changes specifically
+        if 'status' in request.data:
+            new_status = request.data['status']
+            old_status = instance.status
+            
+            # Create status event record
+            OrderStatusEvent.objects.create(
+                order=instance,
+                changed_by=request.user,
+                from_status=old_status,
+                to_status=new_status,
+                note=f"Status updated via admin dashboard"
+            )
+        
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        
+        return Response(serializer.data)

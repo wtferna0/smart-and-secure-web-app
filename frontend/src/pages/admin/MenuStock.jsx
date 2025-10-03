@@ -1,70 +1,221 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import "./orders.css";
 import AdminTabs from "../../components/admin/AdminTabs.jsx";
 import Modal from "../../components/Modal.jsx";
-
-const SEED = [
-  { img:"/src/assets/mock/latte.svg", name:"Espresso", desc:"Rich, bold shot of our signature espresso...", cat:"Hot Beverages", price:2.95, stock:50, status:"Available" },
-  { img:"/src/assets/mock/latte.svg", name:"Cappuccino", desc:"Perfect balance of espresso, steamed milk...", cat:"Hot Beverages", price:4.25, stock:45, status:"Available" },
-  { img:"/src/assets/mock/bagel.svg", name:"Iced Coffee", desc:"Smooth cold brew served over ice...", cat:"Cold Beverages", price:3.75, stock:40, status:"Available" },
-  { img:"/src/assets/mock/brownie.svg", name:"Chocolate Cake", desc:"Rich, moist chocolate cake with ganache ...", cat:"Cakes", price:4.50, stock:8,  status:"Available", badge:"Low" },
-  { img:"/src/assets/mock/brownie.svg", name:"Chocolate Chip Cookies", desc:"Freshly baked premium chocolate chip...", cat:"Cookies", price:2.95, stock:0,  status:"Unavailable", badge:"Out" },
-  { img:"/src/assets/mock/bagel.svg", name:"Avocado Toast", desc:"Smashed avocado on artisan sourdough ...", cat:"Short-eats", price:7.50, stock:10, status:"Available" },
-];
+import { api } from "../../lib/api.js";
 
 export default function AdminMenuStock(){
-  const [items, setItems] = useState(SEED);
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [open, setOpen] = useState(false);
-  const [draft, setDraft] = useState(null);   // { ...item, idx }
+  const [draft, setDraft] = useState(null);
   const [adding, setAdding] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [saving, setSaving] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
-  const totals = useMemo(()=>({
+  // Fetch menu items and categories
+  useEffect(() => {
+    fetchMenuData();
+  }, []);
+
+  const fetchMenuData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const [itemsData, categoriesData] = await Promise.all([
+        api.getMenuItems(),
+        api.getMenuCategories()
+      ]);
+      
+      console.log("📦 Menu items:", itemsData);
+      console.log("📂 Categories:", categoriesData);
+      
+      setItems(itemsData || []);
+      setCategories(categoriesData || []);
+      
+    } catch (err) {
+      console.error("Failed to fetch menu data:", err);
+      setError(`Failed to load menu data: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const showSuccess = (message) => {
+    setSuccessMessage(message);
+    setTimeout(() => setSuccessMessage(""), 3000);
+  };
+
+  const totals = useMemo(() => ({
     total: items.length,
-    available: items.filter(i=>i.status==="Available").length,
-    low: items.filter(i=>i.badge==="Low").length,
-    out: items.filter(i=>i.badge==="Out").length,
-  }),[items]);
+    available: items.filter(i => i.is_active && i.stock_qty > 0).length,
+    low: items.filter(i => i.stock_qty > 0 && i.stock_qty <= 10).length,
+    out: items.filter(i => i.stock_qty === 0).length,
+  }), [items]);
 
-  function onEdit(idx){
-    setDraft({ ...items[idx], idx });
+  const getStockBadge = (item) => {
+    if (item.stock_qty === 0) return { text: "Out", class: "bad" };
+    if (item.stock_qty <= 10) return { text: "Low", class: "warning" };
+    return null;
+  };
+
+  const getStatusText = (item) => {
+    if (!item.is_active) return "Unavailable";
+    if (item.stock_qty === 0) return "Out of Stock";
+    return "Available";
+  };
+
+  function onEdit(item){
+    setDraft({ 
+      ...item, 
+      category_id: item.category?.id || item.category,
+      description: item.description || "",
+      image: item.image || ""
+    });
     setAdding(false);
     setOpen(true);
   }
+
   function onAdd(){
-    setDraft({ img:"/src/assets/mock/latte.svg", name:"", desc:"", cat:"Hot Beverages", price:0, stock:0, status:"Available" });
+    setDraft({ 
+      name: "", 
+      description: "", 
+      category_id: categories[0]?.id || "", 
+      price: 0, 
+      stock_qty: 0, 
+      is_active: true,
+      image: ""
+    });
     setAdding(true);
     setOpen(true);
   }
-  function onDelete(idx){
-    if(confirm(`Delete "${items[idx].name}"?`)){
-      setItems(prev => prev.filter((_,i)=>i!==idx));
+
+  async function onSave(e) {
+    e.preventDefault();
+    if (!draft) return;
+
+    try {
+      setSaving(true);
+      
+      const itemData = {
+        name: draft.name.trim(),
+        description: draft.description?.trim() || "",
+        category_id: draft.category_id,
+        price: parseFloat(draft.price) || 0,
+        stock_qty: parseInt(draft.stock_qty) || 0,
+        is_active: draft.is_active !== false,
+      };
+
+      let savedItem;
+      
+      if (adding) {
+        // Create new item
+        savedItem = await api.createMenuItem(itemData);
+        setItems(prev => [savedItem, ...prev]);
+        showSuccess("Item created successfully!");
+      } else {
+        // Update existing item
+        savedItem = await api.updateMenuItem(draft.id, itemData);
+        setItems(prev => prev.map(item => 
+          item.id === draft.id ? savedItem : item
+        ));
+        showSuccess("Item updated successfully!");
+      }
+      
+      setOpen(false);
+      
+    } catch (err) {
+      console.error("Failed to save item:", err);
+      alert(`Failed to save item: ${err.message}`);
+    } finally {
+      setSaving(false);
     }
   }
-  function onSave(e){
-    e.preventDefault();
-    const clean = {
-      img: draft.img,
-      name: draft.name || "Untitled",
-      desc: draft.desc || "",
-      cat: draft.cat || "Hot Beverages",
-      price: Number(draft.price)||0,
-      stock: Number(draft.stock)||0,
-      status: draft.status || "Available",
-      badge: draft.stock<=0 ? "Out" : (draft.stock<=10 ? "Low" : undefined)
-    };
-    setItems(prev=>{
-      if(adding) return [clean, ...prev];
-      const next=[...prev]; next[draft.idx]=clean; return next;
-    });
-    setOpen(false);
+
+  async function onDelete(item, idx) {
+    if (!confirm(`Are you sure you want to delete "${item.name}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      await api.deleteMenuItem(item.id);
+      setItems(prev => prev.filter((_, i) => i !== idx));
+      showSuccess("Item deleted successfully!");
+    } catch (err) {
+      console.error("Failed to delete item:", err);
+      alert(`Failed to delete item: ${err.message}`);
+    }
   }
+
+  async function onToggleActive(item) {
+    try {
+      const updatedItem = await api.toggleMenuItemActive(item.id);
+      setItems(prev => prev.map(i => 
+        i.id === item.id ? updatedItem : i
+      ));
+      showSuccess(`Item ${updatedItem.is_active ? 'activated' : 'deactivated'} successfully!`);
+    } catch (err) {
+      console.error("Failed to toggle item status:", err);
+      alert(`Failed to update item status: ${err.message}`);
+    }
+  }
+
+  async function onUpdateStock(item, newStock) {
+    try {
+      const updatedItem = await api.updateMenuItemStock(item.id, newStock);
+      setItems(prev => prev.map(i => 
+        i.id === item.id ? updatedItem : i
+      ));
+      showSuccess("Stock quantity updated successfully!");
+    } catch (err) {
+      console.error("Failed to update stock:", err);
+      alert(`Failed to update stock: ${err.message}`);
+    }
+  }
+
+  if (loading) return (
+    <section className="admin">
+      <AdminTabs />
+      <h1>Menu & Stock Management</h1>
+      <p className="muted">Loading menu data...</p>
+    </section>
+  );
+
+  if (error) return (
+    <section className="admin">
+      <AdminTabs />
+      <h1>Menu & Stock Management</h1>
+      <p className="bad">{error}</p>
+      <button className="btn btn-primary" onClick={fetchMenuData}>
+        🔄 Retry
+      </button>
+    </section>
+  );
 
   return (
     <section className="admin">
       <AdminTabs />
       <h1>Menu & Stock Management</h1>
-      <p className="muted">Manage menu items, prices, categories, and stock levels.</p>
+      <p className="muted">Manage menu items, prices, categories, and stock levels. Showing {items.length} items.</p>
 
+      {/* Success Message */}
+      {successMessage && (
+        <div className="success-message" style={{
+          background: "#d4edda",
+          color: "#155724",
+          padding: "0.75rem",
+          borderRadius: "4px",
+          marginBottom: "1rem",
+          border: "1px solid #c3e6cb"
+        }}>
+          ✅ {successMessage}
+        </div>
+      )}
+
+      {/* KPI Cards */}
       <div className="grid kpis">
         <div className="card kpi"><span>Total Items</span><strong>{totals.total}</strong></div>
         <div className="card kpi"><span>Available</span><strong>{totals.available}</strong></div>
@@ -72,71 +223,234 @@ export default function AdminMenuStock(){
         <div className="card kpi"><span>Out of Stock</span><strong>{totals.out}</strong></div>
       </div>
 
-      <div className="row" style={{marginBottom:"10px"}}>
+      {/* Action Bar */}
+      <div className="row" style={{marginBottom:"10px", gap: "0.5rem"}}>
         <button className="btn btn-primary" onClick={onAdd}>＋ Add Item</button>
+        <button className="btn" onClick={fetchMenuData}>🔄 Refresh</button>
       </div>
 
+      {/* Menu Items Table */}
       <div className="card tbl">
         <h3>Menu Items ({items.length})</h3>
-        <table className="table">
-          <thead>
-            <tr><th>Item</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th><th>Actions</th></tr>
-          </thead>
-          <tbody>
-            {items.map((it,i)=>(
-              <tr key={i}>
-                <td>
-                  <div className="row" style={{alignItems:"center", gap:".6rem"}}>
-                    <img src={it.img} alt="" style={{width:32,height:32,borderRadius:8,objectFit:"cover"}}/>
-                    <div><strong>{it.name}</strong><div className="muted small">{it.desc}</div></div>
-                  </div>
-                </td>
-                <td><span className="pill">{it.cat}</span></td>
-                <td>${it.price.toFixed(2)}</td>
-                <td>{it.stock} {it.badge && <span className={`badge ${it.badge==="Out"?"bad":""}`}>{it.badge}</span>}</td>
-                <td className={it.status==="Unavailable"?"bad":""}>{it.status}</td>
-                <td>
-                  <button className="btn btn-ghost" onClick={()=>onEdit(i)}>✏️</button>
-                  <button className="btn btn-ghost" onClick={()=>onDelete(i)}>🗑️</button>
-                </td>
+        {items.length === 0 ? (
+          <p className="muted" style={{textAlign: "center", padding: "2rem"}}>
+            No menu items found. <button className="btn-link" onClick={onAdd}>Add your first item</button>
+          </p>
+        ) : (
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Status</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {items.map((item, i) => {
+                const badge = getStockBadge(item);
+                const status = getStatusText(item);
+                
+                return (
+                  <tr key={item.id}>
+                    <td>
+                      <div className="row" style={{alignItems:"center", gap:".6rem"}}>
+                        {item.image ? (
+                          <img 
+                            src={item.image} 
+                            alt={item.name}
+                            style={{
+                              width: 32,
+                              height: 32,
+                              borderRadius: 8,
+                              objectFit: "cover",
+                              backgroundColor: "#f5f5f5"
+                            }}
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                            }}
+                          />
+                        ) : (
+                          <div style={{
+                            width: 32,
+                            height: 32,
+                            borderRadius: 8,
+                            backgroundColor: "#e9ecef",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: "12px",
+                            color: "#6c757d"
+                          }}>
+                            📷
+                          </div>
+                        )}
+                        <div>
+                          <strong>{item.name}</strong>
+                          {item.description && (
+                            <div className="muted small" style={{maxWidth: "200px"}}>
+                              {item.description}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <span className="pill">
+                        {item.category?.name || "Uncategorized"}
+                      </span>
+                    </td>
+                    <td>${parseFloat(item.price).toFixed(2)}</td>
+                    <td>
+                      <div style={{display: "flex", alignItems: "center", gap: "0.5rem"}}>
+                        <span>{item.stock_qty}</span>
+                        {badge && (
+                          <span className={`badge ${badge.class}`}>
+                            {badge.text}
+                          </span>
+                        )}
+                        <button 
+                          className="btn-link small"
+                          onClick={() => {
+                            const newStock = prompt(`Enter new stock quantity for ${item.name}:`, item.stock_qty);
+                            if (newStock !== null && !isNaN(newStock)) {
+                              onUpdateStock(item, parseInt(newStock));
+                            }
+                          }}
+                          title="Update stock"
+                        >
+                          ✏️
+                        </button>
+                      </div>
+                    </td>
+                    <td className={status === "Out of Stock" || !item.is_active ? "bad" : ""}>
+                      {status}
+                    </td>
+                    <td>
+                      <div style={{display: "flex", gap: "0.25rem"}}>
+                        <button 
+                          className="btn btn-ghost" 
+                          onClick={() => onEdit(item)}
+                          title="Edit item"
+                        >
+                          ✏️
+                        </button>
+                        <button 
+                          className="btn btn-ghost" 
+                          onClick={() => onToggleActive(item)}
+                          title={item.is_active ? "Deactivate" : "Activate"}
+                        >
+                          {item.is_active ? "⏸️" : "▶️"}
+                        </button>
+                        <button 
+                          className="btn btn-ghost" 
+                          onClick={() => onDelete(item, i)}
+                          title="Delete item"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
       </div>
 
-      <Modal open={open} title={adding?"Add Menu Item":"Edit Menu Item"} onClose={()=>setOpen(false)}>
+      {/* Add/Edit Modal */}
+      <Modal open={open} title={adding ? "Add Menu Item" : "Edit Menu Item"} onClose={() => setOpen(false)}>
         {draft && (
           <form onSubmit={onSave}>
-            <label>Image URL
-              <input value={draft.img} onChange={e=>setDraft(d=>({...d, img:e.target.value}))}/>
+            <label>
+              Image URL
+              <input 
+                value={draft.image || ""} 
+                onChange={e => setDraft(d => ({...d, image: e.target.value}))}
+                placeholder="/images/menu/item.jpg"
+              />
             </label>
-            <label>Name
-              <input required value={draft.name} onChange={e=>setDraft(d=>({...d, name:e.target.value}))}/>
+            
+            <label>
+              Name *
+              <input 
+                required 
+                value={draft.name} 
+                onChange={e => setDraft(d => ({...d, name: e.target.value}))}
+                placeholder="e.g., Cappuccino"
+              />
             </label>
-            <label>Description
-              <textarea rows="3" value={draft.desc} onChange={e=>setDraft(d=>({...d, desc:e.target.value}))}/>
+            
+            <label>
+              Description
+              <textarea 
+                rows="3" 
+                value={draft.description || ""} 
+                onChange={e => setDraft(d => ({...d, description: e.target.value}))}
+                placeholder="Describe this menu item..."
+              />
             </label>
-            <label>Category
-              <select value={draft.cat} onChange={e=>setDraft(d=>({...d, cat:e.target.value}))}>
-                {["Hot Beverages","Cold Beverages","Cakes","Cookies","Short-eats"].map(c=><option key={c}>{c}</option>)}
+            
+            <label>
+              Category *
+              <select 
+                value={draft.category_id} 
+                onChange={e => setDraft(d => ({...d, category_id: e.target.value}))}
+                required
+              >
+                <option value="">Select a category</option>
+                {categories.map(cat => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </option>
+                ))}
               </select>
             </label>
-            <label>Price (USD)
-              <input type="number" step="0.01" value={draft.price} onChange={e=>setDraft(d=>({...d, price:e.target.value}))}/>
+            
+            <div style={{display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem"}}>
+              <label>
+                Price (USD) *
+                <input 
+                  type="number" 
+                  step="0.01" 
+                  min="0"
+                  value={draft.price} 
+                  onChange={e => setDraft(d => ({...d, price: e.target.value}))}
+                  required
+                />
+              </label>
+              
+              <label>
+                Stock Quantity *
+                <input 
+                  type="number" 
+                  min="0"
+                  value={draft.stock_qty} 
+                  onChange={e => setDraft(d => ({...d, stock_qty: e.target.value}))}
+                  required
+                />
+              </label>
+            </div>
+            
+            <label style={{display: "flex", alignItems: "center", gap: "0.5rem"}}>
+              <input 
+                type="checkbox" 
+                checked={draft.is_active !== false}
+                onChange={e => setDraft(d => ({...d, is_active: e.target.checked}))}
+              />
+              Available on menu
             </label>
-            <label>Stock
-              <input type="number" value={draft.stock} onChange={e=>setDraft(d=>({...d, stock:e.target.value}))}/>
-            </label>
-            <label>Status
-              <select value={draft.status} onChange={e=>setDraft(d=>({...d, status:e.target.value}))}>
-                <option>Available</option>
-                <option>Unavailable</option>
-              </select>
-            </label>
+
             <div className="modal-actions">
-              <button type="button" className="btn" onClick={()=>setOpen(false)}>Cancel</button>
-              <button className="btn btn-primary">Save</button>
+              <button type="button" className="btn" onClick={() => setOpen(false)} disabled={saving}>
+                Cancel
+              </button>
+              <button type="submit" className="btn btn-primary" disabled={saving}>
+                {saving ? "Saving..." : (adding ? "Add Item" : "Save Changes")}
+              </button>
             </div>
           </form>
         )}

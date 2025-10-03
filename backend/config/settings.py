@@ -107,8 +107,8 @@ USE_TZ = True
 # --- Static / Media ----------------------------------------------------------
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-MEDIA_URL = "media/"
-MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # --- DRF / OpenAPI / Auth ----------------------------------------------------
@@ -123,7 +123,7 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.AllowAny",
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
-    "PAGE_SIZE": 20,
+    "PAGE_SIZE": 100,
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
 
     "DEFAULT_THROTTLE_RATES": {
@@ -226,3 +226,5 @@ CROWD_METER = {
     "MODEL_PATH": BASE_DIR / "crowd" / "model_assets" / "crowd_model.pkl",
     "TRAIN_LOOKBACK_DAYS": 14,
 }
+
+DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'

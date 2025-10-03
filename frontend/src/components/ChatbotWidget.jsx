@@ -1,27 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { api } from "../lib/api.js"; // Adjust the import path
 import "./ChatbotWidget.css";
-
-// Tiny FAQ brain (no backend needed; swap later if you want)
-function faqReply(text) {
-  const q = text.toLowerCase().trim();
-
-  if (/(hour|open|close|time)/.test(q)) {
-    return "We’re open Mon–Fri 7:00 AM–9:00 PM, Sat 8:00 AM–9:00 PM, Sun 8:00 AM–6:00 PM.";
-  }
-  if (/(menu|drink|coffee|food)/.test(q)) {
-    return "Browse the full menu under Menu → categories (Hot/Cold, Cakes, Cookies, Short-eats).";
-  }
-  if (/(contact|phone|email|location|address|where)/.test(q)) {
-    return "Find us at 123 Innovation Street, Tech District, Downtown. Phone +91 98765 43210 • hello@qwikbrew.com";
-  }
-  if (/(order|pickup|ready|delivery)/.test(q)) {
-    return "Place orders on the Menu and pick up at the counter. Track orders in My Profile → Orders.";
-  }
-  if (/(promo|discount|code|coupon|reward)/.test(q)) {
-    return "Try SAVE10 (10% off) or play the Puzzle to earn rewards. Apply codes at Checkout.";
-  }
-  return `Got it! You said: “${text}”. I’m a demo assistant — ask me about hours, menu, contact, orders, or rewards.`;
-}
 
 const STORAGE_KEY = "qwikbrew_chat_history_v1";
 
@@ -29,25 +8,32 @@ export default function ChatbotWidget() {
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
   const [typing, setTyping] = useState(false);
+  const [userEmail, setUserEmail] = useState("");
+  const [userName, setUserName] = useState("");
   const [messages, setMessages] = useState(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) return JSON.parse(saved);
     } catch {}
     return [
-      { id: "b0", role: "bot", ts: Date.now(), content: "Hi! I’m your Brew assistant ☕ How can I help?" },
+      { id: "b0", role: "bot", ts: Date.now(), content: "Hi! I'm your Brew assistant ☕ How can I help? Try 'menu', 'order status', 'loyalty', 'hours', 'location', or 'crowd'." },
     ];
   });
 
   const listRef = useRef(null);
   const inputRef = useRef(null);
 
-  // persist history
+  useEffect(() => {
+    const savedEmail = localStorage.getItem("qwikbrew_user_email");
+    const savedName = localStorage.getItem("qwikbrew_user_name");
+    if (savedEmail) setUserEmail(savedEmail);
+    if (savedName) setUserName(savedName);
+  }, []);
+
   useEffect(() => {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(messages)); } catch {}
   }, [messages]);
 
-  // auto-scroll to bottom on new messages/open
   useEffect(() => {
     const el = listRef.current;
     if (el) el.scrollTop = el.scrollHeight;
@@ -55,7 +41,7 @@ export default function ChatbotWidget() {
 
   const canSend = useMemo(() => text.trim().length > 0 && !typing, [text, typing]);
 
-  function send(e) {
+  async function send(e) {
     e?.preventDefault();
     if (!canSend) return;
 
@@ -65,13 +51,34 @@ export default function ChatbotWidget() {
     setText("");
     setTyping(true);
 
-    // Fake "thinking" delay
-    const reply = faqReply(content);
-    setTimeout(() => {
-      const botMsg = { id: "b" + crypto.randomUUID(), role: "bot", ts: Date.now(), content: reply };
+    try {
+      const response = await api.chatbotQuery({
+        message: content,
+        email: userEmail,
+        name: userName
+      });
+      
+      const botMsg = { 
+        id: "b" + crypto.randomUUID(), 
+        role: "bot", 
+        ts: Date.now(), 
+        content: response.reply,
+        data: response 
+      };
+      
       setMessages((m) => [...m, botMsg]);
+      
+    } catch (error) {
+      const errorMsg = { 
+        id: "b" + crypto.randomUUID(), 
+        role: "bot", 
+        ts: Date.now(), 
+        content: "Sorry, I encountered an error. Please try again." 
+      };
+      setMessages((m) => [...m, errorMsg]);
+    } finally {
       setTyping(false);
-    }, 500 + Math.random() * 500);
+    }
   }
 
   function clearChat() {
@@ -81,9 +88,83 @@ export default function ChatbotWidget() {
     inputRef.current?.focus();
   }
 
+  function updateUserInfo() {
+    const email = prompt("Enter your email for order tracking:", userEmail || "");
+    const name = prompt("Enter your name:", userName || "");
+    
+    if (email !== null) {
+      setUserEmail(email);
+      localStorage.setItem("qwikbrew_user_email", email);
+    }
+    if (name !== null) {
+      setUserName(name);
+      localStorage.setItem("qwikbrew_user_name", name);
+    }
+    
+    if (email || name) {
+      const infoMsg = { 
+        id: "b" + crypto.randomUUID(), 
+        role: "bot", 
+        ts: Date.now(), 
+        content: "User info updated! Now I can help you with order status and loyalty points." 
+      };
+      setMessages((m) => [...m, infoMsg]);
+    }
+  }
+
+  function renderMessageContent(message) {
+    if (message.data) {
+      if (message.data.categories && message.data.sample) {
+        return (
+          <div>
+            <div>{message.content}</div>
+            <div style={{marginTop: '8px', fontSize: '0.9em'}}>
+              <strong>Categories:</strong> {message.data.categories.join(', ')}
+              <br/>
+              <strong>Sample Items:</strong>
+              <ul style={{margin: '4px 0', paddingLeft: '16px'}}>
+                {message.data.sample.map((item, index) => (
+                  <li key={index}>{item.name} - ${(item.price / 100).toFixed(2)}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        );
+      }
+      
+      if (message.data.buckets) {
+        return (
+          <div>
+            <div>{message.content}</div>
+            <div style={{marginTop: '8px', fontSize: '0.9em'}}>
+              <strong>Recent orders by hour:</strong>
+              <ul style={{margin: '4px 0', paddingLeft: '16px'}}>
+                {message.data.buckets.map((bucket, index) => (
+                  <li key={index}>Hour {bucket.hour}: {bucket.count} orders</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        );
+      }
+      
+      if (message.data.order_id) {
+        return (
+          <div>
+            {message.content}
+            <div style={{marginTop: '4px', fontSize: '0.9em'}}>
+              <em>Order ID: {message.data.order_id}</em>
+            </div>
+          </div>
+        );
+      }
+    }
+    
+    return message.content;
+  }
+
   return (
     <>
-      {/* Floating round button with a proper chat icon */}
       <button
         className="chat-fab"
         aria-label={open ? "Close chat" : "Open chat"}
@@ -99,8 +180,18 @@ export default function ChatbotWidget() {
           <div className="chat-head">
             <div className="chat-title">
               <span className="dot" /> BrewBot
+              {userEmail && (
+                <span className="user-badge" title="Click to update info" onClick={updateUserInfo}>
+                  {userName || userEmail}
+                </span>
+              )}
             </div>
             <div className="chat-actions">
+              {!userEmail && (
+                <button className="btn ghost" onClick={updateUserInfo} title="Set user info for orders">
+                  Set User
+                </button>
+              )}
               <button className="btn ghost" onClick={clearChat} title="Clear conversation">Clear</button>
               <button className="btn ghost" onClick={() => setOpen(false)} title="Close">✕</button>
             </div>
@@ -109,7 +200,7 @@ export default function ChatbotWidget() {
           <div className="chat-list" ref={listRef}>
             {messages.map((m) => (
               <div key={m.id} className={`msg ${m.role}`}>
-                <div className="bubble">{m.content}</div>
+                <div className="bubble">{renderMessageContent(m)}</div>
               </div>
             ))}
             {typing && (
@@ -127,7 +218,7 @@ export default function ChatbotWidget() {
             <input
               ref={inputRef}
               type="text"
-              placeholder="Type your message…"
+              placeholder="Type your message… (try: menu, order status, hours, location)"
               value={text}
               onChange={(e) => setText(e.target.value)}
               onKeyDown={(e) => {

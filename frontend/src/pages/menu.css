@@ -17,5 +17,73 @@
 .price{ font-weight:800; color:#5b3a1a }
 .add{ background:#8a1d2d; color:#fff }
 
+.search-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #f4f4f9;
+  border-radius: 50px;
+  padding: 10px 20px;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.search-box:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.search-icon {
+  font-size: 20px;
+  color: #8a8a8a;
+  margin-right: 10px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  outline: none;
+  background-color: transparent;
+  font-size: 16px;
+  color: #333;
+  border-radius: 25px;
+  transition: 0.3s ease;
+}
+
+.search-input::placeholder {
+  color: #8a8a8a;
+}
+
+.search-input:focus {
+  background-color: #eaeaea;
+}
+
+.clear-search {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: #888;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.clear-search:hover {
+  color: #ff5c5c;
+}
+
+.clear-search:focus {
+  outline: none;
+}
+
+
 @media (max-width: 1100px){ .items-grid{ grid-template-columns:repeat(2,1fr) } }
 @media (max-width: 800px){ .menu-layout{ grid-template-columns:1fr } .items-grid{ grid-template-columns:1fr } }

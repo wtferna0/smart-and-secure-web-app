@@ -24,4 +24,123 @@
 .rw{ display:flex; justify-content:space-between; align-items:center; padding:.8rem 1rem; border:1px dashed #e6ded9; border-radius:12px; background:#f8f5f2 }
 .rw-badge{ padding:.2rem .5rem; border-radius:999px; font-weight:700; font-size:.8rem }
 .rw-badge.ok{ background:#e6f4ea; color:#1b7a3f } .rw-badge.used{ background:#efe8e6; color:#6a5a54 }
+/* Order Items Styling */
+.order-items-section {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.order-items-title {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 600;
+}
+
+.order-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.order-item-detail {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 0.5rem;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+}
+
+.item-info {
+  flex: 1;
+}
+
+.item-name {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 0.2rem;
+}
+
+.item-meta {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.item-total {
+  font-weight: 600;
+  color: #2c5530;
+}
+
+.no-items {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  padding: 1rem;
+}
+
+/* Order Summary Styling */
+.order-summary {
+  border-top: 1px solid #e9ecef;
+  padding-top: 1rem;
+  margin-top: 1rem;
+}
+
+.order-summary-line {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.3rem;
+}
+
+.order-summary-line.discount {
+  color: #dc3545;
+}
+
+.order-summary-line.total {
+  border-top: 1px solid #e9ecef;
+  padding-top: 0.5rem;
+  margin-top: 0.5rem;
+  font-size: 1.1rem;
+}
+
+/* Enhanced Order Header */
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.order-main-info {
+  flex: 1;
+}
+
+.order-id {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #2c5530;
+}
+
+.order-date {
+  color: #666;
+  font-size: 0.9rem;
+  margin-top: 0.2rem;
+}
+
+/* Order Card Enhancements */
+.order-card {
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.order-card:hover {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
 @media (max-width: 900px){ .stats{ grid-template-columns:1fr } .lp-milestones{ grid-template-columns:1fr } }

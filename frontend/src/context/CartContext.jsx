@@ -1,32 +1,178 @@
-import React, { createContext, useContext, useMemo, useState } from "react";
+import React, { createContext, useState, useContext } from 'react';
 
-const CartCtx = createContext();
+const CartContext = createContext();
 
-export function CartProvider({ children }){
-  const [items, setItems] = useState([]);
-  const [open, setOpen] = useState(false);
+export function useCart() {
+  const context = useContext(CartContext);
+  if (!context) {
+    console.warn('useCart used outside CartProvider');
+    // Return safe fallback
+    return {
+      cartItems: [],
+      addToCart: () => {},
+      removeFromCart: () => {},
+      updateQuantity: () => {},
+      clearCart: () => {},
+      getCartTotal: () => 0,
+      getCartItemsCount: () => 0,
+      getItemQuantity: () => 0,
+      isItemInCart: () => false,
+      getAvailableQuantity: () => 0,
+      cartTotal: 0,
+      itemsCount: 0,
+      isEmpty: true,
+      isOpen: false,
+      setOpen: () => {}
+    };
+  }
+  return context;
+}
 
-  const add = (item)=>{
-    setItems(prev=>{
-      const i = prev.findIndex(p=>p.id===item.id);
-      if(i>-1){
-        const next=[...prev]; next[i]={...next[i], qty: next[i].qty+1}; return next;
-      }
-      return [...prev, {...item, qty:1}];
-    });
-    setOpen(true);
+export function CartProvider({ children }) {
+
+  const [cartItems, setCartItems] = useState([]);
+  const [isOpen, setIsOpen] = useState(false);
+
+  // SAFE array access - always returns array
+  const getSafeItems = (items) => {
+    return Array.isArray(items) ? items : [];
   };
-  const remove = (id)=> setItems(prev=>prev.filter(p=>p.id!==id));
-  const inc = (id)=> setItems(prev=>prev.map(p=>p.id===id?{...p, qty:p.qty+1}:p));
-  const dec = (id)=> setItems(prev=>prev.map(p=>p.id===id?{...p, qty:Math.max(1,p.qty-1)}:p));
-  const clear = ()=> setItems([]);
-  const total = useMemo(()=> items.reduce((s,i)=>s + i.price*i.qty, 0), [items]);
+
+  const addToCart = (item) => {
+    if (!item || !item.id) {
+      console.warn('Attempted to add invalid item to cart:', item);
+      return;
+    }
+
+    setCartItems(prev => {
+      const safePrev = getSafeItems(prev);
+      const existing = safePrev.find(cartItem => cartItem.id === item.id);
+      
+      if (existing) {
+        return safePrev.map(cartItem =>
+          cartItem.id === item.id
+            ? { 
+                ...cartItem, 
+                quantity: (cartItem.quantity || 0) + 1 
+              }
+            : cartItem
+        );
+      }
+      
+      return [...safePrev, { 
+        id: item.id,
+        name: item.name || 'Unknown Item',
+        price: parseFloat(item.price) || 0,
+        quantity: 1,
+        category: item.category,
+        stock_qty: item.stock_qty || 0,
+        image: item.image || null // Add image to cart item
+      }];
+    });
+  };
+
+  const removeFromCart = (itemId) => {
+    setCartItems(prev => {
+      const safePrev = getSafeItems(prev);
+      return safePrev.filter(item => item.id !== itemId);
+    });
+  };
+
+  const updateQuantity = (itemId, quantity) => {
+    const numQuantity = parseInt(quantity) || 0;
+    if (numQuantity <= 0) {
+      removeFromCart(itemId);
+      return;
+    }
+    
+    setCartItems(prev => {
+      const safePrev = getSafeItems(prev);
+      return safePrev.map(item =>
+        item.id === itemId ? { ...item, quantity: numQuantity } : item
+      );
+    });
+  };
+
+  const clearCart = () => {
+    setCartItems([]);
+  };
+
+  const getCartTotal = () => {
+    const safeItems = getSafeItems(cartItems);
+    return safeItems.reduce((total, item) => {
+      const price = parseFloat(item.price) || 0;
+      const quantity = parseInt(item.quantity) || 0;
+      return total + (price * quantity);
+    }, 0);
+  };
+
+  const getCartItemsCount = () => {
+    const safeItems = getSafeItems(cartItems);
+    return safeItems.reduce((total, item) => total + (parseInt(item.quantity) || 0), 0);
+  };
+
+  const getItemQuantity = (itemId) => {
+    const safeItems = getSafeItems(cartItems);
+    const item = safeItems.find(cartItem => cartItem.id === itemId);
+    return item ? (parseInt(item.quantity) || 0) : 0;
+  };
+
+  const isItemInCart = (itemId) => {
+    const safeItems = getSafeItems(cartItems);
+    return safeItems.some(item => item.id === itemId);
+  };
+
+  const getAvailableQuantity = (item) => {
+    if (!item) return 0;
+    const currentInCart = getItemQuantity(item.id);
+    const stock = parseInt(item.stock_qty) || 0;
+    return Math.max(0, stock - currentInCart);
+  };
+
+  React.useEffect(() => {
+    window.debugCart = () => {
+      console.log('🛒 Cart Items:', cartItems);
+      console.log('🛒 Cart Total:', getCartTotal());
+      return { items: cartItems, total: getCartTotal() };
+    };
+  }, [cartItems]);
+
+  // SAFE computed values
+  const safeCartItems = getSafeItems(cartItems);
+  const cartTotal = getCartTotal();
+  const itemsCount = getCartItemsCount();
+  const isEmpty = safeCartItems.length === 0;
+
+  const value = {
+    // State (always safe)
+    cartItems: safeCartItems,
+    isOpen,
+    
+    // Actions
+    addToCart,
+    removeFromCart,
+    updateQuantity,
+    clearCart,
+    setOpen: setIsOpen,
+    
+    // Getters
+    getCartTotal,
+    getCartItemsCount,
+    getItemQuantity,
+    isItemInCart,
+    getAvailableQuantity,
+    
+    // Computed values (always safe)
+    cartTotal,
+    itemsCount,
+    isEmpty
+  };
 
   return (
-    <CartCtx.Provider value={{items, add, remove, inc, dec, clear, total, open, setOpen}}>
+    <CartContext.Provider value={value}>
       {children}
-    </CartCtx.Provider>
+    </CartContext.Provider>
   );
 }
 
-export const useCart = ()=> useContext(CartCtx);
+export default CartContext;

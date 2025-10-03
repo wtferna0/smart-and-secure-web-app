@@ -7,4 +7,6 @@ router = DefaultRouter()
 router.register("items", MenuItemViewSet, basename="menuitem")
 router.register("categories", CategoryViewSet, basename="menucategory")
 
-urlpatterns = [path("", include(router.urls))]
+urlpatterns = [
+    path("", include(router.urls)),
+]

@@ -11,7 +11,7 @@ class UserProfile(models.Model):
 
     # Loyalty inside user
     points_balance = models.IntegerField(default=0)
-    paid_order_count = models.IntegerField(default=0)
+    # REMOVED: paid_order_count = models.IntegerField(default=0) - Now calculated dynamically
     default_currency = models.CharField(max_length=3, default="LKR")
     marketing_opt_in = models.BooleanField(default=False)
 
@@ -20,6 +20,31 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return self.display_name or self.user.username
+
+    @property
+    def paid_order_count(self):
+        """
+        Dynamically calculate paid orders count from orders_order table
+        Counts orders that are PLACED, ACCEPTED, or DONE (considered paid/completed)
+        """
+        try:
+            from orders.models import Order
+            # Orders that are considered "paid" - adjust as needed for your business logic
+            PAID_STATUSES = [
+                Order.Status.PLACED,      # Order has been placed (usually after payment)
+                Order.Status.ACCEPTED,    # Order accepted by merchant
+                Order.Status.DONE,        # Order completed
+            ]
+            return Order.objects.filter(
+                customer_id=self.user_id, 
+                status__in=PAID_STATUSES
+            ).count()
+        except ImportError:
+            # Fallback if orders app is not available or not installed
+            return 0
+        except Exception as e:
+            # Handle any other exceptions gracefully
+            return 0
 
 
 class AuditLog(models.Model):
