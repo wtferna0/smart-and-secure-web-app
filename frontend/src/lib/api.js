@@ -407,4 +407,20 @@ export const api = {
     console.log('🔄 Falling back to main user endpoint for profile data');
     return api.updateAdminUser(userId, profileData);
   },
+
+  // In your api.js file, add these endpoints:
+
+// Loyalty APIs
+  getLoyaltyPoints: () => request("/api/loyalty/points/"),
+
+  redeemPoints: (payload) => request("/api/loyalty/redeem-points/", {
+    method: "POST",
+    body: payload
+  }),
+
+  applyPromoCode: (payload) => request("/api/loyalty/apply-promo/", {
+    method: "POST", 
+    body: payload
+  }),
+
 };

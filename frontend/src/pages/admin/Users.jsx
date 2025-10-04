@@ -95,6 +95,8 @@ export default function AdminUsers(){
   }, [users]);
 
   function onEdit(user) { 
+    console.log('🔍 DEBUG - User data when editing:', user);
+    
     setDraft({ 
       ...user,
       // Flatten profile fields for the form
@@ -194,8 +196,6 @@ export default function AdminUsers(){
         }
       }
       
-      
-
       setOpen(false);
       fetchUsers();
       alert(`User ${adding ? 'created' : 'updated'} successfully!`);
@@ -397,144 +397,165 @@ export default function AdminUsers(){
         )}
       </div>
 
-      // Add/Edit Modal
+      {/* Add/Edit Modal */}
       <Modal open={open} title={adding ? "Add User" : "Edit User"} onClose={() => setOpen(false)}>
         {draft && (
-          <form onSubmit={onSave}>
-            {adding && (
-              <>
-                <label>
-                  Username *
-                  <input 
-                    required 
-                    value={draft.username} 
-                    onChange={e => setDraft(d => ({...d, username: e.target.value}))}
-                    placeholder="Enter username"
-                  />
-                </label>
-                <label>
-                  Email *
-                  <input 
-                    type="email"
-                    required 
-                    value={draft.email} 
-                    onChange={e => setDraft(d => ({...d, email: e.target.value}))}
-                    placeholder="user@example.com"
-                  />
-                </label>
-                <label>
-                  Password *
-                  <input 
-                    type="password"
-                    required 
-                    value={draft.password} 
-                    onChange={e => setDraft(d => ({...d, password: e.target.value}))}
-                    placeholder="Enter password"
-                  />
-                </label>
-              </>
-            )}
-            
-            <div style={{display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem"}}>
-              <label>
-                First Name
-                <input 
-                  value={draft.first_name || ''} 
-                  onChange={e => setDraft(d => ({...d, first_name: e.target.value}))}
-                  placeholder="First name"
-                />
-              </label>
-              <label>
-                Last Name
-                <input 
-                  value={draft.last_name || ''} 
-                  onChange={e => setDraft(d => ({...d, last_name: e.target.value}))}
-                  placeholder="Last name"
-                />
-              </label>
+          <>
+            {/* TEMPORARY DEBUG - Remove this after testing */}
+            <div style={{
+              background: '#f0f8ff', 
+              padding: '10px', 
+              marginBottom: '15px', 
+              border: '2px solid blue',
+              borderRadius: '4px',
+              fontSize: '12px'
+            }}>
+              <strong>DEBUG - Current Draft Values:</strong><br/>
+              First Name: "{draft.first_name}"<br/>
+              Last Name: "{draft.last_name}"<br/>
+              Display Name: "{draft.display_name}"<br/>
+              Contact Email: "{draft.contact_email}"<br/>
+              Phone: "{draft.phone}"<br/>
+              Points: {draft.points_balance}<br/>
+              Currency: {draft.default_currency}
             </div>
             
-            <label>
-              Display Name
-              <input 
-                value={draft.display_name} 
-                onChange={e => setDraft(d => ({...d, display_name: e.target.value}))}
-                placeholder="Display name"
-              />
-            </label>
-            
-            <label>
-              Phone
-              <input 
-                value={draft.phone} 
-                onChange={e => setDraft(d => ({...d, phone: e.target.value}))}
-                placeholder="Phone number"
-              />
-            </label>
-            
-            <label>
-              Contact Email
-              <input 
-                type="email"
-                value={draft.contact_email} 
-                onChange={e => setDraft(d => ({...d, contact_email: e.target.value}))}
-                placeholder="Contact email"
-              />
-            </label>
-            
-            <div style={{display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem"}}>
+            <form onSubmit={onSave}>
+              {adding && (
+                <>
+                  <label>
+                    Username *
+                    <input 
+                      required 
+                      value={draft.username} 
+                      onChange={e => setDraft(d => ({...d, username: e.target.value}))}
+                      placeholder="Enter username"
+                    />
+                  </label>
+                  <label>
+                    Email *
+                    <input 
+                      type="email"
+                      required 
+                      value={draft.email} 
+                      onChange={e => setDraft(d => ({...d, email: e.target.value}))}
+                      placeholder="user@example.com"
+                    />
+                  </label>
+                  <label>
+                    Password *
+                    <input 
+                      type="password"
+                      required 
+                      value={draft.password} 
+                      onChange={e => setDraft(d => ({...d, password: e.target.value}))}
+                      placeholder="Enter password"
+                    />
+                  </label>
+                </>
+              )}
+              
+              <div style={{display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem"}}>
+                <label>
+                  First Name
+                  <input 
+                    value={draft.first_name || ''} 
+                    onChange={e => setDraft(d => ({...d, first_name: e.target.value}))}
+                    placeholder="First name"
+                  />
+                </label>
+                <label>
+                  Last Name
+                  <input 
+                    value={draft.last_name || ''} 
+                    onChange={e => setDraft(d => ({...d, last_name: e.target.value}))}
+                    placeholder="Last name"
+                  />
+                </label>
+              </div>
+              
               <label>
-                Points Balance
+                Display Name
                 <input 
-                  type="number"
-                  min="0"
-                  value={draft.points_balance} 
-                  onChange={e => setDraft(d => ({...d, points_balance: parseInt(e.target.value) || 0}))}
+                  value={draft.display_name} 
+                  onChange={e => setDraft(d => ({...d, display_name: e.target.value}))}
+                  placeholder="Display name"
                 />
               </label>
               
               <label>
-                Currency
-                <select 
-                  value={draft.default_currency} 
-                  onChange={e => setDraft(d => ({...d, default_currency: e.target.value}))}
-                >
-                  <option value="LKR">LKR</option>
-                  <option value="USD">USD</option>
-                  <option value="EUR">EUR</option>
-                </select>
+                Phone
+                <input 
+                  value={draft.phone} 
+                  onChange={e => setDraft(d => ({...d, phone: e.target.value}))}
+                  placeholder="Phone number"
+                />
               </label>
-            </div>
-            
-            {!adding && (
+              
+              <label>
+                Contact Email
+                <input 
+                  type="email"
+                  value={draft.contact_email} 
+                  onChange={e => setDraft(d => ({...d, contact_email: e.target.value}))}
+                  placeholder="Contact email"
+                />
+              </label>
+              
+              <div style={{display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem"}}>
+                <label>
+                  Points Balance
+                  <input 
+                    type="number"
+                    min="0"
+                    value={draft.points_balance} 
+                    onChange={e => setDraft(d => ({...d, points_balance: parseInt(e.target.value) || 0}))}
+                  />
+                </label>
+                
+                <label>
+                  Currency
+                  <select 
+                    value={draft.default_currency} 
+                    onChange={e => setDraft(d => ({...d, default_currency: e.target.value}))}
+                  >
+                    <option value="LKR">LKR</option>
+                    <option value="USD">USD</option>
+                    <option value="EUR">EUR</option>
+                  </select>
+                </label>
+              </div>
+              
+              {!adding && (
+                <label style={{display: "flex", alignItems: "center", gap: "0.5rem"}}>
+                  <input 
+                    type="checkbox" 
+                    checked={draft.is_active}
+                    onChange={e => setDraft(d => ({...d, is_active: e.target.checked}))}
+                  />
+                  Active User
+                </label>
+              )}
+              
               <label style={{display: "flex", alignItems: "center", gap: "0.5rem"}}>
                 <input 
                   type="checkbox" 
-                  checked={draft.is_active}
-                  onChange={e => setDraft(d => ({...d, is_active: e.target.checked}))}
+                  checked={draft.marketing_opt_in}
+                  onChange={e => setDraft(d => ({...d, marketing_opt_in: e.target.checked}))}
                 />
-                Active User
+                Marketing Opt-in
               </label>
-            )}
-            
-            <label style={{display: "flex", alignItems: "center", gap: "0.5rem"}}>
-              <input 
-                type="checkbox" 
-                checked={draft.marketing_opt_in}
-                onChange={e => setDraft(d => ({...d, marketing_opt_in: e.target.checked}))}
-              />
-              Marketing Opt-in
-            </label>
 
-            <div className="modal-actions">
-              <button type="button" className="btn" onClick={() => setOpen(false)} disabled={saving}>
-                Cancel
-              </button>
-              <button type="submit" className="btn btn-primary" disabled={saving}>
-                {saving ? "Saving..." : (adding ? "Add User" : "Save Changes")}
-              </button>
-            </div>
-          </form>
+              <div className="modal-actions">
+                <button type="button" className="btn" onClick={() => setOpen(false)} disabled={saving}>
+                  Cancel
+                </button>
+                <button type="submit" className="btn btn-primary" disabled={saving}>
+                  {saving ? "Saving..." : (adding ? "Add User" : "Save Changes")}
+                </button>
+              </div>
+            </form>
+          </>
         )}
       </Modal>
     </section>

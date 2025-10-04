@@ -19,11 +19,13 @@ export default function Profile(){
     } else {
       setLoading(false);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, tab]); // Added tab dependency to refresh when switching tabs
 
   const fetchUserProfile = async () => {
     try {
       const token = localStorage.getItem('access_token');
+      console.log('🔄 Fetching latest profile data...');
+      
       const response = await fetch(`${API_BASE}/auth/me/`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -32,12 +34,16 @@ export default function Profile(){
       
       if (response.ok) {
         const userData = await response.json();
+        console.log('✅ Profile data received:', userData);
+        console.log('💰 Points balance:', userData?.profile?.points_balance);
         setProfileData(userData);
       } else {
-        console.log('Failed to fetch profile data');
+        console.log('❌ Failed to fetch profile data');
+        setError('Failed to load profile data');
       }
     } catch (error) {
-      console.error('Failed to fetch profile:', error);
+      console.error('🚨 Failed to fetch profile:', error);
+      setError('Failed to load profile data');
     }
   };
 
@@ -77,19 +83,21 @@ export default function Profile(){
           ordersArray = ordersData.data;
         }
         
-        console.log('✅ Processed orders:', ordersArray);
+        console.log('✅ Processed orders:', ordersArray.length);
         setOrders(ordersArray);
+        
+        // Refresh profile data after fetching orders to get updated points
+        setTimeout(() => {
+          fetchUserProfile();
+        }, 500);
       } else if (response.status === 401) {
         console.log('❌ Unauthorized - user not logged in or token invalid');
         setOrders([]);
-        // Optionally logout the user
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
         window.location.reload();
       } else {
         console.log('⚠️ Orders API error status:', response.status);
-        const errorText = await response.text();
-        console.log('Error response:', errorText);
         setOrders([]);
       }
     } catch (error) {
@@ -100,33 +108,11 @@ export default function Profile(){
     }
   };
 
-  // Enhanced mock data with safety
-  const getMockOrders = () => {
-    return [
-      { 
-        id: 1, 
-        order_token: "QB-1234", 
-        status: "fulfilled", 
-        total: "15.00", 
-        subtotal: "15.00",
-        placed_at: "2024-01-15T10:30:00Z",
-        items: [
-          { item_name: "Affogato (Espresso + Ice Cream)", qty: 1, price_each: "15.00" }
-        ]
-      },
-      { 
-        id: 2, 
-        order_token: "QB-1223", 
-        status: "paid", 
-        total: "12.50", 
-        subtotal: "12.50",
-        placed_at: "2024-01-12T14:20:00Z",
-        items: [
-          { item_name: "Cafe Latte", qty: 1, price_each: "4.50" },
-          { item_name: "Chocolate Chip Cookie", qty: 2, price_each: "4.00" }
-        ]
-      }
-    ];
+  // Refresh data function
+  const refreshData = () => {
+    setLoading(true);
+    fetchUserProfile();
+    fetchOrders();
   };
 
   // Format date for display
@@ -136,7 +122,9 @@ export default function Profile(){
       return new Date(dateString).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'short',
-        day: 'numeric'
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
       });
     } catch {
       return 'Invalid date';
@@ -146,10 +134,13 @@ export default function Profile(){
   // Get status badge class
   const getStatusClass = (status) => {
     const statusMap = {
-      'pending_payment': 'pending',
-      'paid': 'processing',
-      'fulfilled': 'completed',
-      'cancelled': 'cancelled'
+      'PENDING_PAYMENT': 'pending',
+      'PLACED': 'processing',
+      'ACCEPTED': 'processing',
+      'DONE': 'completed',
+      'COMPLETED': 'completed',
+      'FAILED': 'cancelled',
+      'CANCELLED': 'cancelled'
     };
     return statusMap[status] || 'pending';
   };
@@ -157,12 +148,74 @@ export default function Profile(){
   // Get status display text
   const getStatusText = (status) => {
     const statusMap = {
-      'pending_payment': 'Pending Payment',
-      'paid': 'Processing',
-      'fulfilled': 'Completed',
-      'cancelled': 'Cancelled'
+      'PENDING_PAYMENT': 'Pending Payment',
+      'PLACED': 'Order Placed',
+      'ACCEPTED': 'Processing',
+      'DONE': 'Ready',
+      'COMPLETED': 'Completed',
+      'FAILED': 'Failed',
+      'CANCELLED': 'Cancelled'
     };
-    return statusMap[status] || status;
+    return statusMap[status] || status.replace('_', ' ');
+  };
+
+  // Calculate loyalty points and tier from real data
+  const calculateLoyaltyData = () => {
+    const points = authUser.points_balance || 0;
+    console.log('🎯 Calculating loyalty data from points:', points);
+    
+    let tier = "Bronze";
+    if (points >= 1500) tier = "Gold";
+    else if (points >= 1000) tier = "Silver";
+    
+    return { points, tier };
+  };
+
+  // Calculate rewards based on loyalty points
+  const calculateRewards = () => {
+    const points = profileData?.profile?.points_balance || 0;
+    console.log('🎁 Calculating rewards for points:', points);
+    const rewards = [];
+
+    // Available rewards based on points
+    if (points >= 500) {
+      rewards.push({
+        code: "FREECOFFEE500",
+        desc: "Free Coffee (500 Points)",
+        exp: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        status: "Available"
+      });
+    }
+
+    if (points >= 1000) {
+      rewards.push({
+        code: "FREEPANTRY1000",
+        desc: "Free Pastry (1000 Points)",
+        exp: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        status: "Available"
+      });
+    }
+
+    if (points >= 1500) {
+      rewards.push({
+        code: "FREEMEAL1500",
+        desc: "Free Meal (1500 Points)",
+        exp: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        status: "Available"
+      });
+    }
+
+    // If no rewards available, show message
+    if (rewards.length === 0) {
+      rewards.push({
+        code: "EARNMORE",
+        desc: `Earn ${500 - points} more points to unlock your first reward`,
+        exp: "-",
+        status: "Locked"
+      });
+    }
+
+    return rewards;
   };
 
   // Show login prompt if not authenticated
@@ -189,30 +242,33 @@ export default function Profile(){
     );
   }
 
+  // Calculate real data
+  const loyalty = calculateLoyaltyData();
+  const rewards = calculateRewards();
+  
+  // Determine next reward threshold
+  let nextRewardAt = 500;
+  if (loyalty.points >= 500) nextRewardAt = 1000;
+  if (loyalty.points >= 1000) nextRewardAt = 1500;
+  if (loyalty.points >= 1500) nextRewardAt = 2000; // For future rewards
+  
+  const pct = Math.min(100, Math.round((loyalty.points / nextRewardAt) * 100));
+
   // SAFETY CHECK: Ensure orders is always an array
   const safeOrders = Array.isArray(orders) ? orders : [];
   
-  // Use real data from backend with safety checks
-  const loyalty = { 
-    points: profileData?.profile?.points_balance || 0, 
-    tier: (profileData?.profile?.points_balance >= 1500 ? "Gold" : profileData?.profile?.points_balance >= 1000 ? "Silver" : "Bronze")
-  };
-  
-  const rewards = [
-    { code:"SAVE10", desc:"10% off your next order", exp:"2024-02-15", status:"Available" },
-    { code:"FREELATTE", desc:"Free latte with any purchase", exp:"2024-01-30", status:"Available" },
-    { code:"BIRTHDAY20", desc:"20% off birthday treat", exp:"2024-03-20", status:"Used" },
-  ];
-  
-  const nextRewardAt = 1500;
-  const pct = Math.min(100, Math.round((loyalty.points/nextRewardAt)*100));
-
-  // SAFETY CHECK: Calculate totals with array protection
+  // Calculate totals with array protection
   const totalOrders = safeOrders.length;
   const totalSpent = safeOrders.reduce((sum, order) => {
     const orderTotal = parseFloat(order.total) || 0;
     return sum + orderTotal;
   }, 0);
+
+  // Calculate member since date
+  const memberSince = authUser?.date_joined ? new Date(authUser.date_joined).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long'
+  }) : new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
 
   return (
     <section className="profile">
@@ -222,11 +278,33 @@ export default function Profile(){
         </div>
       )}
 
+      {/* Refresh Button */}
+      <div style={{ textAlign: 'right', marginBottom: '1rem' }}>
+        <button 
+          onClick={refreshData}
+          className="btn"
+          style={{
+            background: 'var(--primary)',
+            color: 'white',
+            border: 'none',
+            padding: '0.5rem 1rem',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '0.9rem'
+          }}
+        >
+          🔄 Refresh
+        </button>
+      </div>
+
       <div className="banner card">
         <div className="avatar">👤</div>
         <div className="who">
-          <strong>{authUser?.first_name} {authUser?.last_name}</strong>
-          <div className="muted">{authUser?.email} • Member since {new Date().toLocaleDateString()}</div>
+          <strong>{authUser?.first_name || authUser?.username} {authUser?.last_name}</strong>
+          <div className="muted">{authUser?.email} • Member since {memberSince}</div>
+          <div className="points-display" style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: '#666' }}>
+            <strong>Loyalty Points: {loyalty.points}</strong> • Tier: {loyalty.tier}
+          </div>
         </div>
       </div>
 
@@ -247,7 +325,7 @@ export default function Profile(){
               <div className="muted">Total Orders</div>
             </div>
             <div className="stat">
-              <div className="big">${totalSpent.toFixed(2)}</div>
+              <div className="big">LKR {totalSpent.toLocaleString()}</div>
               <div className="muted">Total Spent</div>
             </div>
             <div className="stat">
@@ -260,10 +338,14 @@ export default function Profile(){
             <h4>Account Details</h4>
             <p><strong>Username:</strong> {authUser?.username}</p>
             <p><strong>Email:</strong> {authUser?.email}</p>
-            <p><strong>Name:</strong> {authUser?.first_name} {authUser?.last_name}</p>
+            <p><strong>Name:</strong> {authUser?.first_name || 'Not set'} {authUser?.last_name || ''}</p>
             <p><strong>Loyalty Tier:</strong> {loyalty.tier}</p>
+            <p><strong>Loyalty Points:</strong> {loyalty.points}</p>
             {profileData?.profile?.phone && (
               <p><strong>Phone:</strong> {profileData.profile.phone}</p>
+            )}
+            {profileData?.profile?.display_name && (
+              <p><strong>Display Name:</strong> {profileData.profile.display_name}</p>
             )}
           </div>
         </div>
@@ -272,6 +354,9 @@ export default function Profile(){
       {tab==="orders" && (
         <div className="card p">
           <h3>Order History</h3>
+          <div style={{ marginBottom: '1rem', fontSize: '0.9rem', color: '#666' }}>
+            Points Balance: <strong>{loyalty.points}</strong>
+          </div>
           {safeOrders.length === 0 ? (
             <div className="empty-state">
               <p>No orders found.</p>
@@ -292,7 +377,7 @@ export default function Profile(){
                     </span>
                   </div>
                   
-                  {/* Order Items - Enhanced Display */}
+                  {/* Order Items */}
                   <div className="order-items-section">
                     <h4 className="order-items-title">Items:</h4>
                     <div className="order-items-list">
@@ -300,13 +385,27 @@ export default function Profile(){
                         order.items.map((item, index) => (
                           <div key={index} className="order-item-detail">
                             <div className="item-info">
-                              <span className="item-name">{item.item_name || item.menu_item_name}</span>
+                              <span className="item-name">{item.item_name || 'Unknown Item'}</span>
                               <span className="item-meta">
-                                Qty: {item.qty} × ${(parseFloat(item.price_each) || 0).toFixed(2)}
+                                Qty: {item.qty || 1} × LKR {(parseFloat(item.price_each) || 0).toFixed(2)}
                               </span>
                             </div>
                             <div className="item-total">
-                              ${((parseFloat(item.price_each) || 0) * (item.qty || 1)).toFixed(2)}
+                              LKR {((parseFloat(item.price_each) || 0) * (item.qty || 1)).toFixed(2)}
+                            </div>
+                          </div>
+                        ))
+                      ) : Array.isArray(order.orderitem_set) && order.orderitem_set.length > 0 ? (
+                        order.orderitem_set.map((item, index) => (
+                          <div key={index} className="order-item-detail">
+                            <div className="item-info">
+                              <span className="item-name">{item.item_name || 'Unknown Item'}</span>
+                              <span className="item-meta">
+                                Qty: {item.qty || 1} × LKR {(parseFloat(item.price_each) || 0).toFixed(2)}
+                              </span>
+                            </div>
+                            <div className="item-total">
+                              LKR {((parseFloat(item.price_each) || 0) * (item.qty || 1)).toFixed(2)}
                             </div>
                           </div>
                         ))
@@ -321,18 +420,30 @@ export default function Profile(){
                     {order.subtotal > 0 && (
                       <div className="order-summary-line">
                         <span>Subtotal:</span>
-                        <span>${(parseFloat(order.subtotal) || 0).toFixed(2)}</span>
+                        <span>LKR {(parseFloat(order.subtotal) || 0).toFixed(2)}</span>
                       </div>
                     )}
                     {order.discount_total > 0 && (
                       <div className="order-summary-line discount">
                         <span>Discount:</span>
-                        <span>-${(parseFloat(order.discount_total) || 0).toFixed(2)}</span>
+                        <span>-LKR {(parseFloat(order.discount_total) || 0).toFixed(2)}</span>
+                      </div>
+                    )}
+                    {order.points_redeemed > 0 && (
+                      <div className="order-summary-line points">
+                        <span>Points Redeemed:</span>
+                        <span>- {order.points_redeemed} points</span>
+                      </div>
+                    )}
+                    {order.points_earned > 0 && (
+                      <div className="order-summary-line points-earned">
+                        <span>Points Earned:</span>
+                        <span style={{color: 'green'}}>+ {order.points_earned} points</span>
                       </div>
                     )}
                     <div className="order-summary-line total">
                       <span>Total:</span>
-                      <span><strong>${(parseFloat(order.total) || 0).toFixed(2)}</strong></span>
+                      <span><strong>LKR {(parseFloat(order.total) || 0).toFixed(2)}</strong></span>
                     </div>
                   </div>
                 </div>
@@ -348,12 +459,32 @@ export default function Profile(){
           <div className="lp-points">{loyalty.points}<span>Current Points</span></div>
           <div className="lp-progress">
             <div className="lp-bar"><span style={{width:`${pct}%`}}/></div>
-            <div className="lp-caption">{nextRewardAt - loyalty.points} points to go</div>
+            <div className="lp-caption">
+              {loyalty.points < 500 ? `${500 - loyalty.points} points to Free Coffee` :
+               loyalty.points < 1000 ? `${1000 - loyalty.points} points to Free Pastry` :
+               loyalty.points < 1500 ? `${1500 - loyalty.points} points to Free Meal` :
+               'All rewards unlocked! Keep earning for future rewards'}
+            </div>
           </div>
           <div className="lp-milestones">
-            <div><div className="m-icon">☕</div><div className="m-title">500 Points</div><div className="m-note">Free Coffee</div></div>
-            <div><div className="m-icon">🎁</div><div className="m-title">1,000 Points</div><div className="m-note">Free Pastry</div></div>
-            <div><div className="m-icon">⭐</div><div className="m-title">1,500 Points</div><div className="m-note">Free Meal</div></div>
+            <div className={loyalty.points >= 500 ? "unlocked" : ""}>
+              <div className="m-icon">☕</div>
+              <div className="m-title">500 Points</div>
+              <div className="m-note">Free Coffee</div>
+              {loyalty.points >= 500 && <div className="m-badge">Unlocked</div>}
+            </div>
+            <div className={loyalty.points >= 1000 ? "unlocked" : ""}>
+              <div className="m-icon">🎁</div>
+              <div className="m-title">1,000 Points</div>
+              <div className="m-note">Free Pastry</div>
+              {loyalty.points >= 1000 && <div className="m-badge">Unlocked</div>}
+            </div>
+            <div className={loyalty.points >= 1500 ? "unlocked" : ""}>
+              <div className="m-icon">⭐</div>
+              <div className="m-title">1,500 Points</div>
+              <div className="m-note">Free Meal</div>
+              {loyalty.points >= 1500 && <div className="m-badge">Unlocked</div>}
+            </div>
           </div>
         </div>
       )}
@@ -362,11 +493,19 @@ export default function Profile(){
         <div className="card p">
           <h3>My Reward Codes</h3>
           <p className="muted">Redeem these codes during checkout for special discounts.</p>
+          <div style={{ marginBottom: '1rem', fontSize: '0.9rem', color: '#666' }}>
+            Current Points: <strong>{loyalty.points}</strong>
+          </div>
           <ul className="rw-list">
-            {rewards.map(r=>(
-              <li key={r.code} className={`rw ${r.status==="Available"?"ok":"used"}`}>
-                <div><strong>{r.code}</strong><div className="muted small">{r.desc}<br/>Expires: {r.exp}</div></div>
-                <span className={`rw-badge ${r.status==="Available"?"ok":"used"}`}>{r.status}</span>
+            {rewards.map((r, index) => (
+              <li key={index} className={`rw ${r.status === "Available" ? "ok" : r.status === "Locked" ? "locked" : "used"}`}>
+                <div>
+                  <strong>{r.code}</strong>
+                  <div className="muted small">{r.desc}<br/>Expires: {r.exp}</div>
+                </div>
+                <span className={`rw-badge ${r.status === "Available" ? "ok" : r.status === "Locked" ? "locked" : "used"}`}>
+                  {r.status}
+                </span>
               </li>
             ))}
           </ul>
