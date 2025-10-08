@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+import uuid
+
 
 class Order(models.Model):
     class Status(models.TextChoices):
@@ -20,8 +22,8 @@ class Order(models.Model):
     discount_total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
-    points_redeemed = models.IntegerField(default=0)
     points_earned = models.IntegerField(default=0)
+    points_redeemed = models.IntegerField(default=0)
     applied_promo_code = models.CharField(max_length=40, blank=True, null=True)
 
     placed_at = models.DateTimeField(auto_now_add=True)

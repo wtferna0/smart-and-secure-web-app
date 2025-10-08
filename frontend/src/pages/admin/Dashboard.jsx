@@ -9,6 +9,8 @@ const Dashboard = () => {
   const [recentOrders, setRecentOrders] = useState([]);
   const [menuItems, setMenuItems] = useState([]);
   const [popularItems, setPopularItems] = useState([]);
+  const [crowdData, setCrowdData] = useState(null);
+  const [weeklyRevenue, setWeeklyRevenue] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -75,6 +77,76 @@ const Dashboard = () => {
     };
   };
 
+  // Calculate weekly revenue data
+  const calculateWeeklyRevenue = (orders) => {
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const weeklyData = Array(7).fill(0);
+    
+    // Get the last 7 days including today
+    const today = new Date();
+    const last7Days = Array.from({ length: 7 }, (_, i) => {
+      const date = new Date(today);
+      date.setDate(today.getDate() - i);
+      return date.toISOString().split('T')[0];
+    }).reverse();
+
+    // Calculate revenue for each of the last 7 days
+    last7Days.forEach((date, index) => {
+      const dayRevenue = orders
+        .filter(order => {
+          if (!order.placed_at) return false;
+          const orderDate = new Date(order.placed_at).toISOString().split('T')[0];
+          return orderDate === date;
+        })
+        .reduce((sum, order) => sum + parseFloat(order.total || 0), 0);
+      
+      weeklyData[index] = Math.round(dayRevenue);
+    });
+
+    console.log('📈 Weekly revenue data:', weeklyData);
+    return weeklyData;
+  };
+
+  // Fetch real crowd data from your crowd meter API
+  const fetchCrowdData = async () => {
+    try {
+      const data = await api.getCurrentCrowd();
+      setCrowdData(data);
+      console.log('👥 Real crowd data:', data);
+    } catch (err) {
+      console.error('❌ Crowd API error:', err);
+      // Set fallback if crowd API fails
+      setCrowdData({
+        level: 0,
+        source: 'system',
+        updated_at: new Date().toISOString()
+      });
+    }
+  };
+
+  // Get crowd status description
+  const getCrowdStatus = (level) => {
+    if (level < 15) return "Quiet";
+    if (level < 31) return "Normal";
+    return "Busy";
+  };
+
+  // Get crowd status color
+  const getCrowdStatusColor = (level) => {
+    if (level < 15) return "#28a745"; // Green for Quiet
+    if (level < 31) return "#ffc107"; // Yellow for Normal
+    return "#dc3545"; // Red for Busy
+  };
+
+  // Get source badge color
+  const getSourceColor = (source) => {
+    switch (source) {
+      case 'ml': return '#17a2b8'; // Info blue
+      case 'manual': return '#fd7e14'; // Orange
+      default: return '#6c757d'; // Gray
+    }
+  };
+
   // Fetch dashboard data using your API functions
   const fetchDashboardData = async () => {
     try {
@@ -82,7 +154,7 @@ const Dashboard = () => {
       setError(null);
       console.log('🔄 STARTING dashboard data fetch...');
 
-      // Use your existing API functions
+      // Fetch all data in parallel
       const [ordersData, menuData] = await Promise.all([
         api.getAdminOrders().catch(err => {
           console.error('❌ Orders API error:', err);
@@ -133,7 +205,6 @@ const Dashboard = () => {
         pending_orders: orders.filter(order => 
           ['PENDING_PAYMENT', 'PLACED'].includes(order.status)
         ).length,
-        crowd_level: todayStats.orderCount > 15 ? "Busy" : todayStats.orderCount > 30 ? "Very Busy" : todayStats.orderCount < 5 ? "Quiet" : "Normal",
         status_count: statusCount,
         total_revenue: orders.reduce((sum, order) => sum + parseFloat(order.total || 0), 0)
       };
@@ -144,6 +215,13 @@ const Dashboard = () => {
       const popularItemsData = calculatePopularItems(orders, allMenuItems);
       setPopularItems(popularItemsData);
 
+      // Calculate weekly revenue data
+      const weeklyRevenueData = calculateWeeklyRevenue(orders);
+      setWeeklyRevenue(weeklyRevenueData);
+
+      // Fetch real-time crowd data
+      await fetchCrowdData();
+
     } catch (error) {
       console.error('❌ Dashboard data fetch error:', error);
       setError(`Unable to load dashboard data: ${error.message}`);
@@ -152,6 +230,12 @@ const Dashboard = () => {
       setRecentOrders([]);
       setMenuItems([]);
       setPopularItems([]);
+      setWeeklyRevenue([0, 0, 0, 0, 0, 0, 0]);
+      setCrowdData({
+        level: 0,
+        source: 'system',
+        updated_at: new Date().toISOString()
+      });
       setStats({
         total_orders: 0,
         today_revenue: 0,
@@ -160,7 +244,6 @@ const Dashboard = () => {
         total_products: 0,
         low_stock_items: 0,
         pending_orders: 0,
-        crowd_level: "Normal",
         status_count: { New: 0, Preparing: 0, Ready: 0, Completed: 0 },
         total_revenue: 0
       });
@@ -173,8 +256,8 @@ const Dashboard = () => {
     fetchDashboardData();
   }, []);
 
-  // Demo data
-  const crowd = [450, 600, 750, 900, 1050, 1200, 800];
+  // Fallback demo data in case no orders exist
+  const fallbackWeeklyRevenue = [450, 600, 750, 900, 1050, 1200, 800];
   const fallbackPopularItems = [
     { name: "Caramel Macchiato", count: 23 },
     { name: "Iced Coffee", count: 19 },
@@ -183,10 +266,17 @@ const Dashboard = () => {
     { name: "Avocado Toast", count: 12 }
   ];
 
-  // Determine which popular items to display
+  // Determine which data to display
+  const displayWeeklyRevenue = weeklyRevenue.length > 0 && weeklyRevenue.some(v => v > 0) 
+    ? weeklyRevenue 
+    : fallbackWeeklyRevenue;
+    
   const displayPopularItems = popularItems.length > 0 ? popularItems : 
                             stats.total_orders > 0 ? [{ name: "No item data available", count: 0 }] : 
                             fallbackPopularItems;
+
+  // Calculate max revenue for chart scaling
+  const maxRevenue = Math.max(...displayWeeklyRevenue, 1000); // Ensure minimum scale
 
   if (loading) {
     return (
@@ -208,14 +298,13 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* KPI Cards - REMOVED orders text from Revenue Today and Orders Today */}
+      {/* KPI Cards */}
       <div className="grid kpis">
         <div className="card kpi">
           <div className="kpi-top">
             <span>Orders Today</span>
             <strong>{stats.today_orders || 0}</strong>
           </div>
-          {/* Removed the orders text below */}
         </div>
         
         <div className="card kpi">
@@ -223,7 +312,6 @@ const Dashboard = () => {
             <span>Revenue Today</span>
             <strong>LKR {(stats.today_revenue || 0).toLocaleString()}</strong>
           </div>
-          {/* Removed the orders text below */}
         </div>
         
         <div className="card kpi">
@@ -236,29 +324,84 @@ const Dashboard = () => {
           </div>
         </div>
         
-        <div className="card kpi">
+        {/* Real Crowd Status Card */}
+        <div className="card kpi" style={{
+          borderLeft: `4px solid ${getCrowdStatusColor(crowdData?.level || 0)}`
+        }}>
           <div className="kpi-top">
-            <span>Crowd Level</span>
-            <strong>{stats.crowd_level || "Normal"}</strong>
+            <span>Current Crowd</span>
+            <strong style={{ color: getCrowdStatusColor(crowdData?.level || 0) }}>
+              {crowdData?.level || 0} people
+            </strong>
           </div>
-          <div style={{ fontSize: '0.8rem', opacity: 0.7, marginTop: '0.5rem' }}>
-            Based on today's orders
+          <div style={{ 
+            fontSize: '0.8rem', 
+            opacity: 0.7, 
+            marginTop: '0.5rem',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}>
+            <span>{getCrowdStatus(crowdData?.level || 0)}</span>
+            <span style={{
+              background: getSourceColor(crowdData?.source),
+              color: 'white',
+              padding: '2px 6px',
+              borderRadius: '12px',
+              fontSize: '0.7rem',
+              fontWeight: 'bold'
+            }}>
+              {crowdData?.source?.toUpperCase() || 'SYSTEM'}
+            </span>
           </div>
+          {crowdData?.updated_at && (
+            <div style={{ 
+              fontSize: '0.7rem', 
+              opacity: 0.5, 
+              marginTop: '0.25rem'
+            }}>
+              Updated: {new Date(crowdData.updated_at).toLocaleTimeString()}
+            </div>
+          )}
         </div>
       </div>
 
       {/* Main Content Grid */}
       <div className="grid admin-grid">
-        {/* Weekly Performance Chart */}
+        {/* Weekly Revenue Chart */}
         <div className="card p">
-          <h3>Weekly Performance</h3>
+          <h3>Weekly Revenue</h3>
           <div className="bars">
-            {crowd.map((v, i) => (
+            {displayWeeklyRevenue.map((revenue, i) => (
               <div key={i} className="bar">
-                <div className="fill" style={{ height: `${v / 6}px` }} />
+                <div 
+                  className="fill" 
+                  style={{ 
+                    height: `${(revenue / maxRevenue) * 180}px`,
+                    background: '#7a4d25' // Coffee brown color
+                  }} 
+                />
                 <span className="bar-x">{"SMTWTFS"[i]}</span>
+                <div style={{
+                  fontSize: '0.7rem',
+                  marginTop: '4px',
+                  fontWeight: 'bold',
+                  color: '#7a4d25'
+                }}>
+                  LKR {revenue.toLocaleString()}
+                </div>
               </div>
             ))}
+          </div>
+          <div style={{ 
+            fontSize: '0.8rem', 
+            opacity: 0.7, 
+            marginTop: '0.5rem',
+            textAlign: 'center'
+          }}>
+            {weeklyRevenue.length > 0 && weeklyRevenue.some(v => v > 0) 
+              ? "Last 7 days revenue" 
+              : "Sample weekly revenue data"}
           </div>
         </div>
 
@@ -329,7 +472,7 @@ const Dashboard = () => {
                   return (
                     <tr key={order.id} style={{ borderBottom: '1px solid var(--border)' }}>
                       <td style={{ padding: '0.5rem', fontFamily: 'monospace', fontSize: '0.9rem' }}>
-                        {order.order_token}
+                        {order.id}
                       </td>
                       <td style={{ padding: '0.5rem' }}>
                         {order.customer?.username || order.guest_email || 'Guest'}

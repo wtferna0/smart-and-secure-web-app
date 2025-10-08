@@ -6,6 +6,9 @@ from datetime import timedelta
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # --- .env --------------------------------------------------------------------
+def env(key, default=None):
+    return os.getenv(key, default)
+
 try:
     from dotenv import load_dotenv
     load_dotenv(BASE_DIR / ".env")  # load from project .env explicitly
@@ -180,6 +183,9 @@ if DEBUG and not CSRF_TRUSTED_ORIGINS:
         "https://51.20.9.106:3000",
         "https://cafe-app.duckdns.org",
         "http://cafe-app.duckdns.org",
+        # Add these for PayHere IPN
+        "https://sandbox.payhere.lk",
+        "https://www.sandbox.payhere.lk",
     ]
 
 # --- Password validators (useful for admin/prod) -----------------------------
@@ -212,11 +218,11 @@ LOGGING = {
 }
 
 CROWD_METER = {
-    "MODE": "heuristic",   # change to "ml" after training (step 6)
+    "MODE": "ml",   # change to "ml" after training (step 6)
     "WINDOW_MINUTES": 30,
     "BIN_MINUTES": 5,      # feature time-bins
-    "ACTIVE_STATUSES": ["Accepted", "Preparing", "Ready"],
-    "STATUS_WEIGHTS": {"Accepted": 1.0, "Preparing": 0.8, "Ready": 0.4},
+    "ACTIVE_STATUSES": ["ACCEPTED", "PREPARING", "READY"],
+    "STATUS_WEIGHTS": {"ACCEPTED": 1.0, "PREPARING": 0.8, "READY": 0.4},
     "PEOPLE_PER_ORDER": 1.3,
     "CAPACITY": 50,
     "SMOOTHING_ALPHA": 0.35,
@@ -225,6 +231,15 @@ CROWD_METER = {
     "CREATED_FIELD": "placed_at",
     "MODEL_PATH": BASE_DIR / "crowd" / "model_assets" / "crowd_model.pkl",
     "TRAIN_LOOKBACK_DAYS": 14,
+}
+
+PAYHERE = {
+    "MERCHANT_ID": "1232370",  # Your actual merchant ID from PayHere dashboard
+    "MERCHANT_SECRET": "MjQ4OTgxOTI3MzEyMDk0Nzc0MDU1NTU0MzM2OTkzNDExNjkxODU2",  # Your actual secret
+    "CHECKOUT_URL": "https://sandbox.payhere.lk/pay/checkout",  # Sandbox
+    "RETURN_URL": "https://cafe-app.duckdns.org/order-success",  # Must be absolute URL
+    "CANCEL_URL": "https://cafe-app.duckdns.org/order-cancelled",  # Must be absolute URL
+    "NOTIFY_URL": "https://cafe-app.duckdns.org/api/payments/payhere/ipn/",  # Must be absolute URL
 }
 
 DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'

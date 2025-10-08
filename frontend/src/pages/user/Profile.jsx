@@ -161,8 +161,27 @@ export default function Profile(){
 
   // Calculate loyalty points and tier from real data
   const calculateLoyaltyData = () => {
-    const points = authUser.points_balance || 0;
-    console.log('🎯 Calculating loyalty data from points:', points);
+    // Try to get the most recent points from multiple sources
+    let points = 0;
+    
+    // First priority: Profile data (most reliable)
+    if (profileData?.profile?.points_balance !== undefined) {
+      points = profileData.profile.points_balance;
+      console.log('🎯 Using points from profile data:', points);
+    }
+    // Second priority: Auth user data
+    else if (authUser?.points_balance !== undefined) {
+      points = authUser.points_balance;
+      console.log('🎯 Using points from auth user:', points);
+    }
+    // Third priority: Latest points from localStorage
+    else {
+      const latestPoints = localStorage.getItem('latest_points');
+      points = latestPoints ? parseInt(latestPoints) : 0;
+      console.log('🎯 Using points from localStorage:', points);
+    }
+    
+    console.log('🎯 Final calculated points:', points);
     
     let tier = "Bronze";
     if (points >= 1500) tier = "Gold";
@@ -369,7 +388,7 @@ export default function Profile(){
                 <div key={order.id} className="order-card">
                   <div className="order-header">
                     <div className="order-main-info">
-                      <div className="order-id">Order #{order.order_token}</div>
+                      <div className="order-id">Order #{order.id}</div>
                       <div className="order-date">{formatDate(order.placed_at)}</div>
                     </div>
                     <span className={`status-badge ${getStatusClass(order.status)}`}>

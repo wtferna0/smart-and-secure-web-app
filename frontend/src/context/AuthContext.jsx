@@ -117,6 +117,7 @@ export function AuthProvider({ children }) {
           password: userData.password,
           first_name: userData.name.split(' ')[0] || '',
           last_name: userData.name.split(' ').slice(1).join(' ') || '',
+          phone: userData.phone || '',
         }),
       });
 

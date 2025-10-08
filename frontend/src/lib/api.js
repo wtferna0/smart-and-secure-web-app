@@ -212,9 +212,39 @@ export const api = {
   // Chatbot-specific menu endpoint
   getChatbotMenu: () => request("/api/menu/"),
 
-  // Crowd/Prediction APIs
-  getPredictions: () => request("/api/crowd/current/"), 
-  sendFeedback: (payload) => request("/api/crowd/override/", { method: "POST", body: payload }),
+  // Add these methods to your existing api object in api.js
+
+// Crowd Meter APIs
+  getCurrentCrowd: () => request("/api/crowd/current/"),
+
+  getCrowdHistory: (limit = 50) => {
+    const queryString = limit ? `?limit=${limit}` : '';
+    return request(`/api/crowd/history/${queryString}`)
+      .then(data => {
+        if (Array.isArray(data)) return data;
+        if (data && Array.isArray(data.results)) return data.results;
+        return [];
+      })
+      .catch(err => {
+        console.error("Failed to fetch crowd history:", err);
+        return [];
+      });
+  },
+
+  setCrowdOverride: (level, ttl_minutes = 30) => 
+    request("/api/crowd/override/", {
+      method: "POST",
+      body: { level, ttl_minutes }
+    }),
+
+  // For backward compatibility with the existing code
+  getPredictions: () => request("/api/crowd/current/"),
+
+  sendFeedback: (feedbackData) => 
+    request("/api/crowd/override/", {
+      method: "POST",
+      body: feedbackData
+    }),
 
   // Order APIs
   createOrder: (orderData) => request("/api/orders/", { 
@@ -335,8 +365,6 @@ export const api = {
     crowd_level: "Normal"
   })),
 
-  // Add these at the end of your existing api object, before the closing };
-
   // Admin Users APIs
   getAdminUsers: (search = '') => {
     let url = '/api/auth/admin/users/';
@@ -378,7 +406,6 @@ export const api = {
     body: { points_balance: points }
   }),
 
-  // Add this to your api.js temporarily
   updateUserProfile: async (userId, profileData) => {
     console.log('🔄 Attempting to update user profile for:', userId);
     
@@ -392,7 +419,7 @@ export const api = {
     for (const endpoint of endpoints) {
       try {
         console.log('🔍 Trying endpoint:', endpoint);
-        const result = await api.request(endpoint, {
+        const result = await request(endpoint, {
           method: 'PATCH',
           body: profileData
         });
@@ -408,9 +435,7 @@ export const api = {
     return api.updateAdminUser(userId, profileData);
   },
 
-  // In your api.js file, add these endpoints:
-
-// Loyalty APIs
+  // LOYALTY APIs - FIXED VERSION
   getLoyaltyPoints: () => request("/api/loyalty/points/"),
 
   redeemPoints: (payload) => request("/api/loyalty/redeem-points/", {
@@ -418,9 +443,79 @@ export const api = {
     body: payload
   }),
 
-  applyPromoCode: (payload) => request("/api/loyalty/apply-promo/", {
-    method: "POST", 
-    body: payload
+  applyPromoCode: async (payload) => {
+    console.log('🎯 Applying promo code with payload:', payload);
+    
+    try {
+      const result = await request("/api/loyalty/apply-promo/", {
+        method: "POST", 
+        body: payload 
+      });
+      
+      console.log('✅ Promo code applied successfully:', result);
+      return result;
+    } catch (error) {
+      console.error('❌ Promo code application failed:', error);
+      throw error;
+    }
+  },
+
+  getUserPromos: () => request("/api/loyalty/user-promos/"),
+
+  // Payment APIs
+  createPayment: async (paymentData) => {
+    console.log('💳 Creating payment record:', paymentData);
+    
+    try {
+      const result = await request("/api/payments/", {
+        method: "POST",
+        body: paymentData
+      });
+      
+      console.log('✅ Payment record created:', result);
+      return result;
+    } catch (error) {
+      console.error('❌ Payment record creation failed:', error);
+      throw error;
+    }
+  },
+
+  // PayHere checkout initialization
+  initPayHereCheckout: (checkoutData) => 
+    request("/api/payments/payhere/checkout/", {
+      method: "POST",
+      body: checkoutData
+    }),
+
+  getPayment: (id) => request(`/api/payments/${id}/`),
+  getOrderPayments: (orderId) => request(`/api/payments/?order=${orderId}`),
+
+  // Test promo creation (for debugging)
+  testPromoCreation: () => request("/api/loyalty/test-creation/", {
+    method: "POST"
   }),
 
+  // Debug function to test promo system
+  debugPromoSystem: async () => {
+    console.log('🔍 Debugging promo system...');
+    
+    try {
+      // Test creating a promo
+      const creationResult = await api.testPromoCreation();
+      console.log('✅ Promo creation test:', creationResult);
+      
+      // Test applying the promo
+      const applyResult = await api.applyPromoCode({
+        code: creationResult.test_code,
+        order_total: 150,
+        email: "debug@example.com"
+      });
+      
+      console.log('✅ Promo application test:', applyResult);
+      return { creation: creationResult, application: applyResult };
+    } catch (error) {
+      console.error('❌ Promo system debug failed:', error);
+      throw error;
+    }
+  }
 };

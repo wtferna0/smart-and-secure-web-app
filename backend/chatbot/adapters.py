@@ -9,33 +9,35 @@ def get_or_create_customer(email: Optional[str], name: str = "") -> Optional[Cha
     if not email:
         return None
     
-    # First try to find in main user system
     try:
+        # Try main user system
         from django.contrib.auth import get_user_model
         User = get_user_model()
-        
-        # Try to find user by email in main system
         main_user = User.objects.filter(email=email).first()
         
-        # Ensure exists in chatbot system for compatibility
         chatbot_customer, _ = ChatCustomer.objects.get_or_create(
             email=email,
-            defaults={"name": name or (main_user.get_full_name() if main_user else "")}
+            defaults={
+                "name": name or (main_user.get_full_name() if main_user else ""),
+                "loyalty_points": getattr(main_user, 'loyalty_points', 0) if main_user else 0
+            }
         )
-        
         return chatbot_customer
         
     except Exception as e:
-        # Fallback to chatbot's own customer system
-        print(f"Error connecting to main user system: {e}")
-        cust, _ = ChatCustomer.objects.get_or_create(email=email, defaults={"name": name})
+        print(f"Using fallback customer system: {e}")
+        # Fallback - create in chatbot system only
+        cust, _ = ChatCustomer.objects.get_or_create(
+            email=email, 
+            defaults={"name": name}
+        )
         return cust
 
 def list_categories() -> Iterable[str]:
     # Try to use main catalog categories first
     try:
-        from catalog.models import Category  # Adjust to your actual catalog app
-        categories = Category.objects.all().values_list('name', flat=True)
+        from catalog.models import MenuCategory  # Your actual model
+        return MenuCategory.objects.all().values_list('name', flat=True)
         return list(categories)
     except ImportError:
         print("Catalog app not found, using chatbot categories")

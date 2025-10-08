@@ -1,4 +1,4 @@
-// Signup.jsx - Updated version
+// Signup.jsx - Updated version with phone number
 import React, { useState } from "react";
 import "./login.css";
 import { useAuth } from "../../context/AuthContext.jsx";
@@ -10,6 +10,7 @@ export default function Signup(){
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [pass, setPass] = useState("");
   const [confirm, setConfirm] = useState("");
   const [err, setErr] = useState("");
@@ -25,7 +26,7 @@ export default function Signup(){
     setLoading(true);
 
     try {
-      const result = await register({ name, email, password: pass });
+      const result = await register({ name, email, phone, password: pass });
       
       // If we get here, registration was successful (even with fallback)
       console.log('✅ Registration completed, navigating to profile');
@@ -67,6 +68,17 @@ export default function Signup(){
               value={email} 
               onChange={e=>setEmail(e.target.value)} 
               placeholder="you@email.com" 
+              required
+              disabled={loading}
+            />
+          </label>
+          <label style={{ display:"grid", gap:6 }}>
+            Phone Number
+            <input 
+              type="tel" 
+              value={phone} 
+              onChange={e=>setPhone(e.target.value)} 
+              placeholder="+94 (555) 123-4567" 
               required
               disabled={loading}
             />

@@ -20,6 +20,10 @@ import Signup from "./pages/auth/Signup.jsx";
 import Profile from "./pages/user/Profile.jsx";
 import Checkout from "./pages/Checkout.jsx";
 
+// PayHere payment pages
+import OrderSuccess from "./pages/OrderSuccess.jsx";
+import OrderCancelled from "./pages/OrderCancelled.jsx";
+
 // Admin pages
 import AdminDashboard from "./pages/admin/Dashboard.jsx";
 import AdminOrders from "./pages/admin/Orders.jsx";
@@ -44,6 +48,10 @@ export default function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/checkout" element={<Checkout />} />
+              
+              {/* PayHere payment result routes */}
+              <Route path="/order-success" element={<OrderSuccess />} />
+              <Route path="/order-cancelled" element={<OrderCancelled />} />
 
               {/* Customer-only */}
               <Route

@@ -31,34 +31,81 @@ class OrderItemCreateSerializer(serializers.Serializer):
     qty = serializers.IntegerField(min_value=1)
 
 
-# ----- Create Order -----
+# In orders/serializers.py - FIXED VERSION
+# orders/serializers.py
+from rest_framework import serializers
+from django.db import transaction
+import uuid  # Add this import
+from .models import Order, OrderItem, OrderStatusEvent
+from catalog.models import MenuItem
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+# ... your other serializers remain the same ...
+
 class OrderCreateSerializer(serializers.Serializer):
     items = OrderItemCreateSerializer(many=True)
     guest_email = serializers.EmailField(required=False, allow_blank=True)
+    
+    # ✅ Only use fields that exist in Order model
+    subtotal = serializers.DecimalField(max_digits=10, decimal_places=2, required=True)
+    total = serializers.DecimalField(max_digits=10, decimal_places=2, required=True)
+    discount_total = serializers.DecimalField(max_digits=10, decimal_places=2, required=True)
+    status = serializers.ChoiceField(choices=Order.Status.choices, required=False, default=Order.Status.PENDING_PAYMENT)
+    points_redeemed = serializers.IntegerField(required=False, default=0)
+    points_earned = serializers.IntegerField(required=False, default=0)
+    applied_promo_code = serializers.CharField(required=False, allow_blank=True, default='')
+
+    def _gen(self):
+        """Generate unique order token"""
+        return str(uuid.uuid4())
 
     @transaction.atomic
     def create(self, validated_data):
-        items = validated_data["items"]
+        items_data = validated_data.pop("items")
+        
+        # ✅ Get ALL provided amounts
+        provided_subtotal = validated_data.get("subtotal")
+        provided_total = validated_data.get("total")
+        provided_discount = validated_data.get("discount_total")
+        provided_status = validated_data.get("status", Order.Status.PENDING_PAYMENT)
+        points_redeemed = validated_data.get("points_redeemed", 0)
+        points_earned = validated_data.get("points_earned", 0)
+        applied_promo_code = validated_data.get("applied_promo_code", "")
         guest_email = validated_data.get("guest_email", "")
         
         # Get the current user from the request
         request = self.context.get('request')
         customer = request.user if request and request.user.is_authenticated else None
         
-        # If no authenticated user but guest email provided, use guest email
-        if not customer and guest_email:
-            # You might want to create a guest user or just store the email
-            pass
+        print(f"🔄 Creating order with provided amounts:")
+        print(f"   Subtotal: {provided_subtotal}")
+        print(f"   Total: {provided_total}")
+        print(f"   Discount: {provided_discount}")
+        print(f"   Promo Code: {applied_promo_code}")
+        print(f"   Points Redeemed: {points_redeemed}")
+        print(f"   Points Earned: {points_earned}")
+        print(f"   Customer: {customer.email if customer else 'Guest'}")
         
+        # ✅ Create order with ONLY EXISTING FIELDS
         order = Order.objects.create(
-            order_token=self._gen(),
-            status=Order.Status.PENDING_PAYMENT,
+            order_token=self._gen(),  # This will now work!
+            status=provided_status,
             customer=customer,
-            guest_email=guest_email if not customer else None
+            guest_email=guest_email if not customer else None,
+            # ✅ USE PROVIDED AMOUNTS DIRECTLY - NO RECALCULATION
+            subtotal=provided_subtotal,
+            total=provided_total,
+            discount_total=provided_discount,
+            points_redeemed=points_redeemed,
+            points_earned=points_earned,
+            applied_promo_code=applied_promo_code
         )
 
-        subtotal = 0
-        for row in items:
+        # Create order items but DON'T recalculate totals
+        calculated_subtotal = 0
+        for row in items_data:
             mi = MenuItem.objects.select_for_update().get(pk=row["menu_item_id"])
             price = mi.price
             line_total = price * row["qty"]
@@ -76,20 +123,20 @@ class OrderCreateSerializer(serializers.Serializer):
             mi.stock_qty = mi.stock_qty - row["qty"]
             mi.save(update_fields=["stock_qty"])
 
-            subtotal += line_total
+            calculated_subtotal += line_total
 
-        order.subtotal = subtotal
-        order.total = subtotal  # promos/taxes later
-        order.save(update_fields=["subtotal", "total"])
+        print(f"✅ Order created:")
+        print(f"   Order ID: {order.id}")
+        print(f"   Order Token: {order.order_token}")
+        print(f"   Provided Subtotal: {provided_subtotal}")
+        print(f"   Calculated Subtotal: {calculated_subtotal}")
+        print(f"   Provided Total: {provided_total}")
+        print(f"   Provided Discount: {provided_discount}")
+        print(f"   Actual Order Total: {order.total}")
+        print(f"   Points Earned (stored): {order.points_earned}")
+        print(f"   Points Redeemed (stored): {order.points_redeemed}")
+        
         return order
-
-    def _gen(self):
-        from uuid import uuid4
-        return uuid4().hex[:16]
-
-    def to_representation(self, instance):
-        return OrderSerializer(instance, context=self.context).data
-
 
 # ----- Read Order (with nested items + status history) -----
 class OrderSerializer(serializers.ModelSerializer):
@@ -101,11 +148,10 @@ class OrderSerializer(serializers.ModelSerializer):
         model = Order
         fields = [
             "id", "order_token", "status", "customer", "guest_email",
-            "subtotal", "discount_total", "total", "placed_at", "updated_at", 
-            "items", "status_events"
+            "subtotal", "discount_total", "total", "points_redeemed", "points_earned", 
+            "applied_promo_code", "placed_at", "updated_at", "items", "status_events"
         ]
-        depth = 1  # Add this to ensure nested serialization works properly
-
+        depth = 1
 
 # ----- Order Status Event Serializer (optional API use) -----
 class OrderStatusEventSerializer(serializers.ModelSerializer):

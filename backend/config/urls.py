@@ -15,8 +15,12 @@ urlpatterns = [
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="docs"),
 
     path('api/auth/', include('accounts.urls')),
-    path("api/", include("chatbot.urls")),
+    path('api/payments/', include('payments.urls')),
+    path('api/chatbot/', include('chatbot.urls')),
     path("api/", include("puzzle.urls")),
+    path('api/loyalty/', include('loyalty.urls')),
+    path('api/crowd/', include('crowd.urls')),
+
 
     path('', TemplateView.as_view(template_name='index.html')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,0 +1,252 @@
+/* crowd.css */
+.crowd-grid-container {
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+.crowd-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.crowd-table th,
+.crowd-table td {
+  padding: 0.5rem;
+  text-align: center;
+  border: 1px solid #e0e0e0;
+}
+
+.time-header {
+  background: #7a4d25;
+  color: white;
+  font-weight: bold;
+  min-width: 60px;
+}
+
+.day-header {
+  background: #8a6a3a;
+  color: white;
+  font-weight: bold;
+  min-width: 80px;
+}
+
+.hour-cell {
+  background: #f8f8f8;
+  font-weight: 600;
+  color: #5b3a1a;
+}
+
+.crowd-cell {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  min-width: 80px;
+  height: 60px;
+}
+
+.crowd-cell:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+}
+
+.crowd-cell.quiet {
+  background: #d4edda;
+  color: #155724;
+}
+
+.crowd-cell.normal {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.crowd-cell.busy {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.crowd-cell.override {
+  border: 2px solid #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.cell-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 2px;
+}
+
+.state-text {
+  font-weight: bold;
+  font-size: 0.8em;
+}
+
+.confidence-badge {
+  background: rgba(0, 0, 0, 0.1);
+  padding: 1px 4px;
+  border-radius: 4px;
+  font-size: 0.7em;
+}
+
+.override-indicator {
+  font-size: 0.8em;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+/* Crowd Indicator */
+.crowd-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  color: white;
+  font-weight: bold;
+  text-align: center;
+}
+
+.crowd-indicator.quiet {
+  background: #28a745;
+}
+
+.crowd-indicator.normal {
+  background: #ffc107;
+  color: #000;
+}
+
+.crowd-indicator.busy {
+  background: #dc3545;
+}
+
+.crowd-level {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.crowd-label {
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+}
+
+/* Legend */
+.crowd-legend h4 {
+  margin-bottom: 0.5rem;
+  color: #5b3a1a;
+}
+
+.legend-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.legend-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.legend-color.quiet { background: #d4edda; }
+.legend-color.normal { background: #fff3cd; }
+.legend-color.busy { background: #f8d7da; }
+
+/* History */
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem;
+  background: #f8f8f8;
+  border-radius: 4px;
+}
+
+.source-badge {
+  background: #6c757d;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+}
+
+/* Add these styles */
+.crowd-cell.override-active {
+  border: 3px solid #ff6b00 !important;
+  box-shadow: 0 0 10px rgba(255, 107, 0, 0.5) !important;
+  animation: pulse-override 2s infinite;
+}
+
+.crowd-cell.current-slot {
+  border-left: 4px solid #2196f3;
+}
+
+@keyframes pulse-override {
+  0% { border-color: #ff6b00; }
+  50% { border-color: #ffa726; }
+  100% { border-color: #ff6b00; }
+}
+
+.override-indicator {
+  color: #ff6b00;
+  font-size: 0.9em;
+  animation: blink 1s infinite;
+}
+
+.current-indicator {
+  color: #2196f3;
+  font-size: 0.8em;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0.3; }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .crowd-table {
+    font-size: 0.8rem;
+  }
+  
+  .crowd-cell {
+    height: 50px;
+    min-width: 60px;
+  }
+  
+  .state-text {
+    font-size: 0.7em;
+  }
+  
+  .legend-items {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}

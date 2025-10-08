@@ -13,9 +13,9 @@ const STATUS_MAPPING = {
 };
 
 const BACKEND_STATUS_MAPPING = {
-  'New': 'ACCEPTED',        // New → Accepted
-  'Accepted': 'DONE',       // Accepted → Ready  
-  'Ready': 'COMPLETED',     // Ready → Completed
+  'New': 'PLACED',        // New → Accepted
+  'Accepted': 'ACCEPTED',       // Accepted → Ready  
+  'Ready': 'DONE',     // Ready → Completed
   'Completed': 'COMPLETED'  // Completed stays Completed
 };
 
@@ -230,7 +230,7 @@ export default function AdminOrders() {
                         style={{ cursor: 'pointer' }}
                       >
                         <div className="order-basic-info">
-                          <strong className="order-number">#{order.order_token}</strong>
+                          <strong className="order-number">#{order.id}</strong>
                           <div className="order-customer">{order.customer_name}</div>
                           <div className="order-total">${order.total_amount.toFixed(2)}</div>
                         </div>

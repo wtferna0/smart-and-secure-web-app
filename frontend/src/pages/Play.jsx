@@ -31,6 +31,20 @@ export default function Play() {
     }
   }, [sessionId, grid]);
 
+  // Load any saved promo codes on component mount
+  useEffect(() => {
+    const savedPromo = localStorage.getItem('puzzleRewardPromo');
+    if (savedPromo) {
+      try {
+        const promoData = JSON.parse(savedPromo);
+        console.log('📥 Loaded saved puzzle reward:', promoData);
+      } catch (e) {
+        console.error('❌ Failed to parse saved puzzle reward:', e);
+        localStorage.removeItem('puzzleRewardPromo');
+      }
+    }
+  }, []);
+
   function initializePuzzle() {
     const size = grid * grid;
     const numbers = Array.from({ length: size - 1 }, (_, i) => i + 1);
@@ -83,6 +97,44 @@ export default function Play() {
     }
   }
 
+  // Function to save promo code to localStorage
+  const savePromoCode = (promoCode, sessionData) => {
+    console.log('💾 Saving promo code:', promoCode);
+    
+    const rewardData = {
+      code: promoCode,
+      type: 'puzzle_reward',
+      earned_at: new Date().toISOString(),
+      session_id: sessionId,
+      awarded_points: sessionData.awarded_points || 0,
+      message: sessionData.message || 'Puzzle Game Reward',
+      grid_size: grid,
+      moves: moves,
+      time_ms: elapsed
+    };
+
+    // Save to puzzle rewards storage
+    localStorage.setItem('puzzleRewardPromo', JSON.stringify(rewardData));
+    
+    // Also save to main promo storage for checkout (with discount info)
+    const checkoutPromoData = {
+      code: promoCode,
+      discount_type: 'AMOUNT',
+      discount_amount: 50, // You can adjust this based on puzzle difficulty
+      message: 'Puzzle Reward - ' + (sessionData.message || 'Congratulations!'),
+      source: 'puzzle_game'
+    };
+    
+    localStorage.setItem('appliedPromo', JSON.stringify(checkoutPromoData));
+    
+    console.log('✅ Promo code saved to localStorage:', {
+      puzzleReward: rewardData,
+      checkoutPromo: checkoutPromoData
+    });
+
+    return rewardData;
+  };
+
   async function complete() {
     if (!sessionId || !startedAt) return;
     
@@ -114,13 +166,17 @@ export default function Play() {
         message = `🎉 ${data.awarded_points} points added to your account!`;
       } else if (data.promo_code) {
         message = `🎁 Use promo code: ${data.promo_code}`;
+        
+        // SAVE THE PROMO CODE TO LOCALSTORAGE
+        savePromoCode(data.promo_code, data);
       }
       
       setResult({
         awarded_points: data.awarded_points ?? 0,
         reward_code: data.promo_code || "",
         message: message,
-        email_used: data.email_used || false
+        email_used: data.email_used || false,
+        promo_saved: !!data.promo_code // Track if promo was saved
       });
     } catch (e) {
       setErr(e.message || "Failed to complete");
@@ -213,7 +269,6 @@ export default function Play() {
         </div>
       )}
 
-      {/* Rest of your existing JSX remains the same */}
       {sessionId && !result && (
         <div className="grid" style={{ gap: 12 }}>
           <div className="card c-pad">
@@ -296,6 +351,11 @@ export default function Play() {
               <li>
                 Reward code: <strong>{result.reward_code}</strong>  
                 <span className="muted small"> — apply it during checkout.</span>
+                {result.promo_saved && (
+                  <div className="good small" style={{ marginTop: 4 }}>
+                    ✅ Promo code automatically saved! It will be available at checkout.
+                  </div>
+                )}
               </li>
             )}
           </ul>

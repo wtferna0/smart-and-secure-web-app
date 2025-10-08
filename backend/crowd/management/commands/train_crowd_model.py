@@ -72,7 +72,7 @@ class Command(BaseCommand):
         target = (tmp.groupby("bin_start")["w"].sum() * ppl).clip(0, cap).rename("target").reset_index()
 
         data = feats.merge(target, on="bin_start", how="left").sort_values("bin_start")
-        data["target"] = data["target"].fillna(method="ffill").fillna(0)
+        data["target"] = data["target"].ffill().fillna(0)
 
         feature_cols = [c for c in data.columns if c not in ["bin_start","target"]]
         X = data[feature_cols].values; y = data["target"].values

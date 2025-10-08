@@ -1,3 +1,4 @@
+# accounts/models.py
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -11,7 +12,11 @@ class UserProfile(models.Model):
 
     # Loyalty inside user
     points_balance = models.IntegerField(default=0)
-    # REMOVED: paid_order_count = models.IntegerField(default=0) - Now calculated dynamically
+    
+    # 🆕 ADD THESE MISSING FIELDS:
+    total_points_earned = models.IntegerField(default=0)
+    total_points_redeemed = models.IntegerField(default=0)
+    
     default_currency = models.CharField(max_length=3, default="LKR")
     marketing_opt_in = models.BooleanField(default=False)
 
