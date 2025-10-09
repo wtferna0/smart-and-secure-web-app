@@ -1,6 +1,6 @@
 # loyalty/urls.py - UPDATED with points endpoints
 from django.urls import path
-from .views import ApplyPromoCodeView, DebugPromoView, TestPromoCreationView, UserPointsView, RedeemPointsView
+from .views import ApplyPromoCodeView, DebugPromoView, TestPromoCreationView, UserPointsView, RedeemPointsView, UserPromosView
 
 urlpatterns = [
     path('apply-promo/', ApplyPromoCodeView.as_view(), name='apply-promo'),
@@ -10,4 +10,6 @@ urlpatterns = [
     # Add these new points endpoints
     path('points/', UserPointsView.as_view(), name='user-points'),
     path('redeem-points/', RedeemPointsView.as_view(), name='redeem-points'),
+
+    path('user-promos/', UserPromosView.as_view(), name='user-promos'),
 ]

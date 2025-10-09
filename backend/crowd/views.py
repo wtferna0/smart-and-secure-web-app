@@ -33,4 +33,41 @@ def override(request):
     ov = ser.save(staff=request.user)
     return Response({"ok": True, "expires_at": ov.expires_at}, status=status.HTTP_201_CREATED)
 
-
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def crowd_prediction(request):
+    """
+    Simple endpoint for frontend crowd meter
+    Returns state and confidence level
+    """
+    from .services import current_level
+    
+    data = current_level()
+    
+    # Map numeric level to state categories
+    level = data["level"]
+    capacity = _cfg().get("CAPACITY", 50)
+    
+    # Calculate percentage for confidence
+    percentage = min(100, max(0, int((level / capacity) * 100)))
+    
+    # Determine state based on capacity percentage
+    if percentage <= 30:
+        state = "Quiet"
+        confidence = 0.3 + (percentage / 30) * 0.4  # 0.3-0.7 range
+    elif percentage <= 70:
+        state = "Normal"
+        confidence = 0.5 + ((percentage - 30) / 40) * 0.3  # 0.5-0.8 range
+    else:
+        state = "Busy" 
+        confidence = 0.7 + ((percentage - 70) / 30) * 0.2  # 0.7-0.9 range
+    
+    return Response({
+        "state": state,
+        "confidence": min(0.95, confidence),  # Cap at 95%
+        "level": level,
+        "capacity": capacity,
+        "percentage": percentage,
+        "updated_at": data["updated_at"],
+        "source": data["source"]
+    })

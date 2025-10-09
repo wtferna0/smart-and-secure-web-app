@@ -242,3 +242,48 @@ class RedeemPointsView(APIView):
             return Response({'error': str(e)}, status=400)
         except Exception as e:
             return Response({'error': f'Failed to redeem points: {str(e)}'}, status=400)
+
+# Add this to loyalty/views.py
+class UserPromosView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        """Get all promo codes earned by the current user"""
+        try:
+            user_promos = UserPromo.objects.filter(user=request.user).select_related('promo')
+            
+            # Format the response to match frontend expectations
+            promos_data = []
+            for user_promo in user_promos:
+                promo_data = {
+                    'id': user_promo.id,
+                    'promo_code': user_promo.promo.code,
+                    'promo_discount_type': user_promo.promo.discount_type,
+                    'promo_amount': float(user_promo.promo.amount),
+                    'redeemed_at': user_promo.redeemed_at.isoformat() if user_promo.redeemed_at else None,
+                    'is_puzzle_reward': user_promo.is_puzzle_reward,
+                    'created_at': user_promo.created_at.isoformat(),
+                    # Include full promo object for frontend
+                    'promo': {
+                        'id': user_promo.promo.id,
+                        'code': user_promo.promo.code,
+                        'discount_type': user_promo.promo.discount_type,
+                        'amount': float(user_promo.promo.amount),
+                        'min_order_total': float(user_promo.promo.min_order_total),
+                        'active': user_promo.promo.active,
+                        'start_date': user_promo.promo.start_date.isoformat() if user_promo.promo.start_date else None,
+                        'end_date': user_promo.promo.end_date.isoformat() if user_promo.promo.end_date else None,
+                        'max_redemptions': user_promo.promo.max_redemptions,
+                        'current_redemptions': user_promo.promo.current_redemptions,
+                        'is_puzzle_reward': user_promo.promo.is_puzzle_reward,
+                        'puzzle_points_required': user_promo.promo.puzzle_points_required
+                    }
+                }
+                promos_data.append(promo_data)
+            
+            print(f"✅ Found {len(promos_data)} promo codes for user {request.user.email}")
+            return Response(promos_data)
+            
+        except Exception as e:
+            print(f"❌ Error fetching user promos: {e}")
+            return Response({'error': str(e)}, status=400)

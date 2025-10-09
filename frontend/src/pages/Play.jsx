@@ -82,7 +82,7 @@ export default function Play() {
       // If user is logged in, don't send email (backend will use auth user's email)
       if (token && isAuthenticated) {
         console.log("🔐 User is authenticated, using account email");
-        emailToUse = ""; // Let backend handle it
+        emailToUse = authUser.email; // Let backend handle it
       }
       
       const data = await api.startPuzzle({ 

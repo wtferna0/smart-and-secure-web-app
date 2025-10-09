@@ -39,6 +39,63 @@
   font-weight: 600;
 }
 
+.reward-type-badge {
+  font-size: 0.7rem;
+  background: #f0f0f0;
+  padding: 0.2rem 0.5rem;
+  border-radius: 12px;
+  color: #666;
+  white-space: nowrap;
+}
+
+.rw-list .rw {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+}
+
+.rw.ok {
+  border-left: 4px solid #4CAF50;
+  background: #f8fff8;
+}
+
+.rw.used {
+  border-left: 4px solid #ccc;
+  background: #f9f9f9;
+  opacity: 0.7;
+}
+
+.rw.locked {
+  border-left: 4px solid #ff9800;
+  background: #fff8f0;
+}
+
+.rw-badge {
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.rw-badge.ok {
+  background: #4CAF50;
+  color: white;
+}
+
+.rw-badge.used {
+  background: #ccc;
+  color: #666;
+}
+
+.rw-badge.locked {
+  background: #ff9800;
+  color: white;
+}
+
 .order-items-list {
   display: flex;
   flex-direction: column;

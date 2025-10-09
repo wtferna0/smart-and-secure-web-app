@@ -31,7 +31,7 @@ export default function Navbar(){
           )}
 
           {/* Profile for all logged-in users */}
-          {user && (
+          {user && !user?.is_staff && (
             <NavLink className={active} to="/profile">My Profile</NavLink>
           )}
 

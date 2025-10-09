@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./home.css";
 import { useCart } from "../context/CartContext.jsx";
+import { api } from "../lib/api.js";
 import { publicApi } from "../lib/api.js";
 
 // Use LKR since your menu is priced for Sri Lanka
@@ -16,7 +17,15 @@ export default function Home() {
   const { addToCart } = useCart();
 
   // 🔹 Crowd state
-  const [crowd, setCrowd] = useState({ state: "Loading...", confidence: 0 });
+  const [crowd, setCrowd] = useState({ 
+    state: "Loading...", 
+    confidence: 0,
+    level: 0,
+    capacity: 50,
+    percentage: 0,
+    source: "loading",
+    updatedAt: null
+  });
 
   useEffect(() => {
     fetchTrendingItems();
@@ -53,14 +62,28 @@ export default function Home() {
 
   const fetchCrowdData = async () => {
     try {
-      const data = await publicApi.getPredictions();
+      const data = await api.getPredictions();
+      console.log("📊 Crowd data received:", data);
+      
       setCrowd({
-        state: data.state,
-        confidence: data.confidence,
+        state: data.state || "Unknown",
+        confidence: data.confidence || 0,
+        level: data.level || 0,
+        capacity: data.capacity || 50,
+        percentage: data.percentage || 0,
+        source: data.source || "unknown",
+        updatedAt: data.updated_at
       });
     } catch (err) {
       console.error("Failed to load crowd data:", err);
-      setCrowd({ state: "Unknown", confidence: 0 });
+      setCrowd({ 
+        state: "Unknown", 
+        confidence: 0,
+        level: 0,
+        capacity: 50,
+        percentage: 0,
+        source: "error"
+      });
     }
   };
 
@@ -161,21 +184,40 @@ export default function Home() {
           <div className="info-head">
             <span className="dot brown">📊</span>
             <h3>Crowd Now</h3>
+            {crowd.source !== "loading" && crowd.source !== "error" && (
+              <span className="source-tag">{crowd.source}</span>
+            )}
           </div>
+          
           <div className="level">
             <span className={`pill ${crowd.state.toLowerCase()}`}>
               {crowd.state}
             </span>
+            <div className="crowd-count">
+              {crowd.level}/{crowd.capacity}
+            </div>
           </div>
+          
           <div className="bar">
-            <span style={{ width: `${crowd.confidence * 100}%` }} />
+            <div 
+              className={`progress ${crowd.state.toLowerCase()}`}
+              style={{ width: `${crowd.percentage}%` }}
+            />
           </div>
-          <div className="muted small">
-            {crowd.state === "Quiet" && "Plenty of space available"}
-            {crowd.state === "Normal" && "Good atmosphere"}
-            {crowd.state === "Busy" && "Might be crowded"}
-            {crowd.state === "Unknown" && "No data available"}
-            {crowd.state === "Loading..." && "Fetching live data..."}
+          
+          <div className="crowd-details">
+            <div className="muted small">
+              {crowd.state === "Quiet" && "😌 Plenty of space available"}
+              {crowd.state === "Normal" && "😊 Good atmosphere"}
+              {crowd.state === "Busy" && "😅 Might be crowded"}
+              {crowd.state === "Unknown" && "❓ No data available"}
+              {crowd.state === "Loading..." && "⏳ Fetching live data..."}
+            </div>
+            {crowd.updatedAt && (
+              <div className="muted x-small">
+                Updated: {new Date(crowd.updatedAt).toLocaleTimeString()}
+              </div>
+            )}
           </div>
         </div>
 
