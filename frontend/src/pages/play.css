@@ -1,13 +1,299 @@
-.play h1 {
-  margin: 0 0 10px;
+/* Play section - centered layout */
+.play {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 80vh;
+  padding: 40px 20px;
+  text-align: center;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
 }
-.c-pad { padding: 16px; }
-.ok-list { margin: 6px 0; padding-left: 20px; }
-.muted { color: #6b7280; }
-.small { font-size: 12px; }
-.row { display: flex; align-items: center; gap: 8px; }
-.grid { display: grid; }
-.card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; }
-.btn { padding: 8px 12px; border: 1px solid var(--border); border-radius: 10px; background: #fff; cursor: pointer; }
-.btn-primary { background: var(--brand); color: #fff; border-color: var(--brand); }
-.bad { color: #b91c1c; }
+
+/* Heading */
+.play h1 {
+  margin: 0 0 30px;
+  font-size: 2.5rem;
+  color: #333;
+  font-weight: 700;
+  text-align: center;
+  width: 100%;
+}
+
+/* Card styles */
+.play .card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  width: 100%;
+  max-width: 560px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  margin-bottom: 20px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.play .card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
+}
+
+/* Card padding */
+.play .c-pad {
+  padding: 24px;
+}
+
+/* Order/Info List */
+.play .ok-list {
+  margin: 6px 0;
+  padding-left: 20px;
+  text-align: left;
+}
+
+.play .ok-list li {
+  margin-bottom: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.play .ok-list li:last-child {
+  border-bottom: none;
+}
+
+/* Muted text */
+.play .muted {
+  color: #6b7280;
+  opacity: 0.8;
+}
+
+/* Smaller text */
+.play .small {
+  font-size: 0.875rem;
+}
+
+/* Row styling */
+.play .row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+/* Grid for layout */
+.play .grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+  width: 100%;
+}
+
+/* Button styles */
+.play .btn {
+  padding: 12px 20px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  min-width: 120px;
+}
+
+.play .btn-primary {
+  background: var(--brand);
+  color: #fff;
+  border-color: var(--brand);
+}
+
+.play .btn-primary:hover {
+  background: var(--brand-dark);
+  transform: translateY(-1px);
+}
+
+.play .btn:hover {
+  background: #f8f9fa;
+  transform: translateY(-1px);
+}
+
+.play .btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Bad/error message styles */
+.play .bad {
+  color: #dc2626;
+  background: #fef2f2;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid #fecaca;
+  text-align: center;
+}
+
+/* Good/success message styles */
+.play .good {
+  color: #059669;
+  background: #f0fdf4;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid #bbf7d0;
+}
+
+/* Info message styles */
+.play .info {
+  color: #1d4ed8;
+  background: #eff6ff;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid #bfdbfe;
+}
+
+/* Form elements */
+.play label {
+  display: grid;
+  gap: 8px;
+  text-align: left;
+  width: 100%;
+}
+
+.play input,
+.play select {
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.play input:focus,
+.play select:focus {
+  outline: none;
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Puzzle container */
+.play .puzzle-container {
+  display: grid;
+  gap: 8px;
+  margin: 0 auto;
+  width: fit-content;
+  padding: 20px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+/* Individual puzzle tiles */
+.play .puzzle-tile {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
+  background: white;
+  border: 2px solid #e2e8f0;
+  font-size: 1.25rem;
+  font-weight: bold;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s ease;
+}
+
+.play .puzzle-tile:hover {
+  background: #f1f5f9;
+  border-color: var(--brand);
+  transform: scale(1.05);
+}
+
+.play .puzzle-tile.empty {
+  background: transparent;
+  border: 2px dashed #cbd5e1;
+  cursor: default;
+}
+
+.play .puzzle-tile.empty:hover {
+  background: transparent;
+  border-color: #cbd5e1;
+  transform: none;
+}
+
+/* Auto-solving tiles */
+.play .auto-solving {
+  opacity: 0.7;
+  background: #e2e8f0;
+}
+
+/* Session info styling */
+.play .card h3 {
+  margin: 0 0 16px 0;
+  color: #1f2937;
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+/* Result card styling */
+.play .card h3+.ok-list {
+  margin-top: 20px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .play {
+    padding: 20px 16px;
+    min-height: calc(100vh - 100px);
+  }
+
+  .play h1 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+  }
+
+  .play .card {
+    padding: 20px 16px;
+    margin-bottom: 16px;
+  }
+
+  .play .row {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .play .btn {
+    width: 100%;
+    min-width: auto;
+  }
+
+  .play .puzzle-tile {
+    width: 56px;
+    height: 56px;
+    font-size: 1.1rem;
+  }
+
+  .play .grid .card:first-child {
+    order: 2;
+  }
+
+  .play .grid .card:last-child {
+    order: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .play .puzzle-tile {
+    width: 48px;
+    height: 48px;
+    font-size: 1rem;
+  }
+
+  .play .puzzle-container {
+    padding: 16px;
+  }
+}

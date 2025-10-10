@@ -28,19 +28,19 @@ export default function Menu() {
     const fetchMenuData = async () => {
       try {
         setLoading(true);
-        
+
         const [categoriesData, itemsData] = await Promise.all([
           publicApi.getMenuCategories(),
           publicApi.getMenuItems()
         ]);
-        
+
         // Safe data processing
         const safeCategories = Array.isArray(categoriesData) ? categoriesData : [];
         const safeItems = Array.isArray(itemsData) ? itemsData : [];
-        
+
         setCategories(safeCategories);
         setItems(safeItems);
-        
+
       } catch (err) {
         console.error("Menu loading error:", err);
         setError("Failed to load menu data");
@@ -62,7 +62,7 @@ export default function Menu() {
   const filteredItems = safeItems.filter(item => {
     const matchesCategory = selectedCategory === "all" || item?.category?.id?.toString() === selectedCategory;
     const matchesSearch = item?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         item?.category?.name?.toLowerCase().includes(searchQuery.toLowerCase());
+      item?.category?.name?.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
@@ -74,8 +74,8 @@ export default function Menu() {
 
   // Get total items count for display
   const totalItemsCount = sortedItems.length;
-  const activeCategoryName = selectedCategory === "all" 
-    ? "All Categories" 
+  const activeCategoryName = selectedCategory === "all"
+    ? "All Categories"
     : safeCategories.find(cat => cat.id.toString() === selectedCategory)?.name || "Selected Category";
 
   if (loading) {
@@ -125,8 +125,8 @@ export default function Menu() {
           <h3>Categories</h3>
           <ul>
             <li>
-              <button 
-                className={`cat-pill ${selectedCategory === "all" ? 'active' : ''}`} 
+              <button
+                className={`cat-pill ${selectedCategory === "all" ? 'active' : ''}`}
                 onClick={() => setSelectedCategory("all")}
               >
                 🌟 All Items
@@ -134,8 +134,8 @@ export default function Menu() {
             </li>
             {safeCategories.map(category => (
               <li key={category.id}>
-                <button 
-                  className={`cat-pill ${selectedCategory === category.id.toString() ? 'active' : ''}`} 
+                <button
+                  className={`cat-pill ${selectedCategory === category.id.toString() ? 'active' : ''}`}
                   onClick={() => setSelectedCategory(category.id.toString())}
                 >
                   {getCategoryIcon(category.name)} {category.name}
@@ -148,26 +148,26 @@ export default function Menu() {
         {/* Main Content Area */}
         <div className="main-content">
           {/* Search Box */}
-            <div className="search-container">
-              <div className="search-box">
-                <span className="search-icon">🔍</span>
-                <input
-                  type="text"
-                  placeholder="Search your favorite items..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="search-input"
-                />
-                {searchQuery && (
-                  <button 
-                    onClick={() => setSearchQuery("")}
-                    className="clear-search"
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
+          <div className="search-container">
+            <div className="search-box">
+              <span className="search-icon">🔍</span>
+              <input
+                type="text"
+                placeholder="Search your favorite items..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="search-input"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="clear-search"
+                >
+                  ✕
+                </button>
+              )}
             </div>
+          </div>
 
           {/* Menu Items Grid */}
           <div className="menu-items">
@@ -183,7 +183,7 @@ export default function Menu() {
                 <h3>No items found</h3>
                 <p>We couldn't find any items matching your search.</p>
                 {(searchQuery || selectedCategory !== "all") && (
-                  <button 
+                  <button
                     onClick={() => {
                       setSearchQuery("");
                       setSelectedCategory("all");
@@ -231,7 +231,7 @@ function MenuItemCard({ item }) {
     if (item.image && !imageError) {
       return item.image;
     }
-    
+
     // Fallback logic based on category
     const categoryName = item?.category?.name?.toLowerCase() || '';
     if (categoryName.includes('coffee')) return defaultImages.coffee;
@@ -245,8 +245,8 @@ function MenuItemCard({ item }) {
   return (
     <article className="menu-card card">
       <div className="item-image-container">
-        <img 
-          src={getItemImage()} 
+        <img
+          src={getItemImage()}
           alt={item.name}
           className="item-image"
           onError={() => setImageError(true)}
@@ -255,7 +255,7 @@ function MenuItemCard({ item }) {
           <div className="chip out-of-stock">Out of Stock</div>
         )}
       </div>
-      
+
       <div className="mc-body">
         <div className="row" style={{ justifyContent: "space-between", alignItems: "flex-start" }}>
           <h4>{item.name}</h4>
@@ -264,8 +264,8 @@ function MenuItemCard({ item }) {
           {item.category?.name}
         </div>
         <div className="row mc-foot">
-          <div className="price">LKR {parseFloat(item.price || 0).toFixed(2)}</div>
-          <button 
+          <div className="price">$ {parseFloat(item.price || 0).toFixed(2)}</div>
+          <button
             className={`btn add ${isOutOfStock ? 'disabled' : ''}`}
             onClick={handleAddToCart}
             disabled={isOutOfStock}

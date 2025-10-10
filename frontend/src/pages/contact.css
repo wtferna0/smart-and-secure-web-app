@@ -1,22 +1,30 @@
-/* Page */
-.contact h1{
+.contact h1 {
   font-family: var(--font-display);
   margin: 0 0 .25rem;
 }
-.lead{ margin-bottom: .6rem; color: #5b5b5b; }
 
-/* Hero card */
-.contact-hero{
+.lead {
+  margin-bottom: .6rem;
+  color: #5b5b5b;
+}
+
+
+.contact-hero {
   padding: 1rem;
-  background: linear-gradient(90deg,#f6efe8,#ffffff);
+  background: linear-gradient(90deg, #f6efe8, #ffffff);
   border: 1px solid var(--border);
-  display: grid; gap: .4rem;
+  display: grid;
+  gap: .4rem;
   margin-bottom: 1rem;
 }
-.contact-hero .tags{
-  display: flex; flex-wrap: wrap; gap: .4rem;
+
+.contact-hero .tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem;
 }
-.contact-hero .tags span{
+
+.contact-hero .tags span {
   border: 1px solid var(--border);
   background: #fff;
   padding: .35rem .6rem;
@@ -24,83 +32,117 @@
   font-size: .85rem;
 }
 
-/* Layout */
-.layout{
-  display: grid; gap: 1rem;
+
+.layout {
+  display: grid;
+  gap: 1rem;
   grid-template-columns: 1.2fr .8fr;
 }
-@media (max-width: 1000px){
-  .layout{ grid-template-columns: 1fr; }
+
+@media (max-width: 1000px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Card base */
-.card{
-  background: #fff; border: 1px solid var(--border);
+.card {
+  background: #fff;
+  border: 1px solid var(--border);
   border-radius: 12px;
 }
 
 /* Form */
-.contact-form{
+.contact-form {
   padding: 1rem;
-  display: grid; gap: .9rem;
+  display: grid;
+  gap: .9rem;
 }
-.contact-form h3{ margin: 0 0 .2rem; }
 
-.grid-2{
-  display: grid; gap: .8rem;
+.contact-form h3 {
+  margin: 0 0 .2rem;
+}
+
+.grid-2 {
+  display: grid;
+  gap: .8rem;
   grid-template-columns: 1fr 1fr;
 }
-@media (max-width: 700px){
-  .grid-2{ grid-template-columns: 1fr; }
+
+@media (max-width: 700px) {
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
 }
 
-.field{
-  display: grid; gap: .35rem;
+.field {
+  display: grid;
+  gap: .35rem;
 }
-.field .label{
-  font-weight: 600; font-size: .95rem;
+
+.field .label {
+  font-weight: 600;
+  font-size: .95rem;
 }
-.req{ color: #b91c1c; font-weight: 700; }
-.hint{ color: #6b7280; font-size: .85rem; margin-top: .2rem; }
+
+.req {
+  color: #b91c1c;
+  font-weight: 700;
+}
+
+.hint {
+  color: #6b7280;
+  font-size: .85rem;
+  margin-top: .2rem;
+}
 
 .contact-form input,
 .contact-form textarea,
-.contact-form select{
+.contact-form select {
   padding: .7rem .85rem;
   border: 1px solid var(--border);
   border-radius: 10px;
   outline: none;
   background: #fff;
 }
+
 .contact-form input:focus,
 .contact-form textarea:focus,
-.contact-form select:focus{
+.contact-form select:focus {
   border-color: #cfa87f;
-  box-shadow: 0 0 0 3px rgba(207,168,127,.18);
+  box-shadow: 0 0 0 3px rgba(207, 168, 127, .18);
 }
 
-.actions{
-  display: flex; align-items: center; gap: .6rem;
+.actions {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
 }
-.btn{
+
+.btn {
   padding: .55rem .9rem;
   border: 1px solid var(--border);
   border-radius: 10px;
   background: #fff;
   cursor: pointer;
 }
-.btn-primary{
+
+.btn-primary {
   background: #7a4a25;
   border-color: #7a4a25;
   color: #fff;
 }
 
-/* Side panel */
-.side{ padding: 1rem; }
 
-.side h3{ margin: 0 0 .4rem; }
+.side {
+  padding: 1rem;
+}
 
-.info-list{
+.side h3 {
+  margin: 0 0 .4rem;
+}
+
+.info-list {
   list-style: none;
   margin: .3rem 0 1rem;
   padding: 0;
@@ -108,74 +150,177 @@
   gap: .35rem;
 }
 
-.info-list li{ 
+.info-list li {
   display: flex;
   align-items: start;
-  gap: .5rem; }
+  gap: .5rem;
+  line-height: 1.4;
+}
 
-.mt{ 
-  margin-top: .6rem; }
+.mt {
+  margin-top: .6rem;
+}
 
-.chips{
+.chips {
   display: flex;
   flex-wrap: wrap;
   gap: .5rem;
   margin: .4rem 0 1rem;
 }
 
-.chips li{
+.chips li {
   border: 1px solid var(--border);
   background: #fff;
   border-radius: 999px;
   padding: .35rem .6rem;
   font-size: .85rem;
 }
-.mini-cta{
+
+.mini-cta {
   padding: .7rem;
   border: 1px dashed var(--border);
   border-radius: 10px;
-  display: grid; gap: .5rem;
+  display: grid;
+  gap: .5rem;
   background: #faf8f6;
 }
 
-/* Inline icons (CSS-only) */
-.i{
-   width: 1rem;
-   height: 1rem;
-   display: inline-block; }
 
-.i-pin{
-  background: radial-gradient(circle at 50% 40%, #7a4a25 35%, transparent 36%) no-repeat,
-  conic-gradient(from 180deg at 50% 75%, #7a4a25 0 180deg, transparent 0) no-repeat;
-  background-size: .6rem .6rem, 1rem 1rem; background-position: 50% .1rem, 0 0; }
+.i {
+  width: 1.1rem;
+  height: 1.1rem;
+  display: inline-block;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
 
-.i-phone{
-   background: linear-gradient(#7a4a25,#7a4a25) center/60% 2px no-repeat,
-   radial-gradient(circle,#7a4a25 45%,transparent 46%) left .05rem bottom .1rem/.35rem .35rem no-repeat; }
+/* Location Pin Icon */
+.i-pin {
+  background:
+    radial-gradient(circle at 50% 35%, #7a4a25 30%, transparent 31%),
+    conic-gradient(from 180deg at 50% 75%, #7a4a25 0 180deg, transparent 0);
+  background-size: .5rem .5rem, 1.1rem 1.1rem;
+  background-position: 50% .15rem, 0 0;
+  position: relative;
+}
 
-.i-mail{ 
-  background: conic-gradient(from 45deg,#7a4a25 0 90deg,transparent 0) left top/50% 50% no-repeat,
-  conic-gradient(from -45deg,#7a4a25 0 90deg,transparent 0) right top/50% 50% no-repeat,
-  linear-gradient(#7a4a25,#7a4a25) bottom/100% 2px no-repeat; }
+/* Phone Icon */
+.i-phone {
+  background:
+    linear-gradient(#7a4a25, #7a4a25) center/60% 2px no-repeat,
+    radial-gradient(circle, #7a4a25 45%, transparent 46%) left .1rem bottom .15rem/.4rem .4rem no-repeat,
+    linear-gradient(#7a4a25, #7a4a25) right .1rem top .3rem/2px .3rem no-repeat;
+  border-radius: 3px;
+  position: relative;
+}
 
-.i-time{ 
-  background: radial-gradient(circle at 50% 50%, transparent 40%, #7a4a25 41% 43%, transparent 44%) no-repeat,
-  linear-gradient(#7a4a25,#7a4a25) center/2px 45% no-repeat,
-  linear-gradient(#7a4a25,#7a4a25) 60% 42%/18% 2px no-repeat; border-radius: 50%; }
+.i-phone::before {
+  content: '';
+  position: absolute;
+  width: .25rem;
+  height: .25rem;
+  background: #7a4a25;
+  border-radius: 50%;
+  top: .15rem;
+  left: 50%;
+  transform: translateX(-50%);
+}
 
-.i-send{ 
-  background: conic-gradient(from -45deg,#fff 0 90deg,transparent 0) right/60% 60% no-repeat;
-  filter: drop-shadow(0 0 0 #fff); }
+/* Email Icon */
+.i-mail {
+  background:
+    linear-gradient(#7a4a25, #7a4a25) bottom/100% 2px no-repeat,
+    linear-gradient(#7a4a25, #7a4a25) top/100% 2px no-repeat,
+    linear-gradient(#7a4a25, #7a4a25) left/2px 100% no-repeat,
+    linear-gradient(#7a4a25, #7a4a25) right/2px 100% no-repeat;
+  background-position: bottom, top, left, right;
+  position: relative;
+  border-radius: 2px;
+}
+
+.i-mail::before {
+  content: '';
+  position: absolute;
+  width: 60%;
+  height: 2px;
+  background: #7a4a25;
+  top: 50%;
+  left: 20%;
+  transform: translateY(-50%) rotate(-45deg);
+}
+
+/* Clock Icon */
+.i-time {
+  background:
+    radial-gradient(circle at 50% 50%, transparent 35%, #7a4a25 36% 38%, transparent 39%),
+    linear-gradient(#7a4a25, #7a4a25) center/2px 40% no-repeat;
+  border-radius: 50%;
+  position: relative;
+}
+
+.i-time::before {
+  content: '';
+  position: absolute;
+  width: 25%;
+  height: 2px;
+  background: #7a4a25;
+  top: 50%;
+  left: 50%;
+  transform-origin: left center;
+  transform: rotate(45deg);
+}
+
+/* Send Icon */
+.i-send {
+  background:
+    linear-gradient(135deg, transparent 49%, #fff 50% 100%) no-repeat;
+  background-size: 60% 60%;
+  background-position: 100% 0;
+  position: relative;
+}
+
+.i-send::before {
+  content: '';
+  position: absolute;
+  width: 70%;
+  height: 2px;
+  background: #fff;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+}
 
 /* FAQ */
-.faq{
-  display: grid; 
-  gap: .8rem; 
+.faq {
+  display: grid;
+  gap: .8rem;
   margin-top: 1rem;
 }
-.faq-item{ 
-  padding: .8rem 1rem; }
 
-.faq summary{ 
-  cursor: pointer; 
-  font-weight: 700; }
+.faq-item {
+  padding: .8rem 1rem;
+}
+
+.faq summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+/* Mobile responsiveness for icons */
+@media (max-width: 768px) {
+  .i {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .info-list li {
+    gap: 0.4rem;
+    align-items: flex-start;
+  }
+}
+
+/* Hover effects */
+.info-list li:hover .i {
+  transform: scale(1.1);
+  transition: transform 0.2s ease;
+}

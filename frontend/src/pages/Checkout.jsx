@@ -18,14 +18,14 @@ export default function Checkout() {
   const [payHereFormData, setPayHereFormData] = useState(null);
 
   // User state
-  const [user, setUser] = useState({ 
-    name: authUser?.first_name && authUser?.last_name ? `${authUser.first_name} ${authUser.last_name}` : "", 
-    email: authUser?.email || "", 
-    phone: authUser?.phone, 
+  const [user, setUser] = useState({
+    name: authUser?.first_name && authUser?.last_name ? `LKR{authUser.first_name} LKR{authUser.last_name}` : "",
+    email: authUser?.email || "",
+    phone: authUser?.phone,
     address: "",
     city: "",
   });
-  
+
   const [usePoints, setUsePoints] = useState(false);
   const [pointsToUse, setPointsToUse] = useState(0);
   const [userPoints, setUserPoints] = useState(0);
@@ -48,7 +48,7 @@ export default function Checkout() {
     if (authUser && isAuthenticated) {
       setUser(prev => ({
         ...prev,
-        name: authUser.first_name && authUser.last_name ? `${authUser.first_name} ${authUser.last_name}` : prev.name,
+        name: authUser.first_name && authUser.last_name ? `LKR{authUser.first_name} LKR{authUser.last_name}` : prev.name,
         email: authUser.email || prev.email, phone: authUser.phone || prev.phone,
       }));
     }
@@ -77,7 +77,7 @@ export default function Checkout() {
       alert("Enter a promo code.");
       return;
     }
-    
+
     if (appliedPromo) {
       alert("Only one promo code per order.");
       return;
@@ -88,7 +88,7 @@ export default function Checkout() {
 
     try {
       console.log("🎯 Checking promo code:", promo.trim());
-      
+
       const result = await api.applyPromoCode({
         code: promo.trim().toUpperCase(),
         order_total: subTotal,
@@ -107,7 +107,7 @@ export default function Checkout() {
           message: result.message
         });
         setPromo("");
-        alert(`Promo code applied! ${result.message}`);
+        alert(`Promo code applied! LKR{result.message}`);
       } else {
         alert(result.error || "Invalid or expired promo code.");
       }
@@ -145,11 +145,11 @@ export default function Checkout() {
       const finalSubtotal = subTotal;
       const finalDiscount = promoDiscount + pointsDiscount;
       const finalTotal = grand;
-      
+
       console.log("📦 Creating order with final amounts:", {
         subtotal: finalSubtotal,
         promoDiscount,
-        pointsDiscount, 
+        pointsDiscount,
         total: finalTotal,
         pointsRedeemed: usePoints ? pointsToUse : 0
       });
@@ -178,7 +178,7 @@ export default function Checkout() {
           name: item.name
         })),
         subtotal: finalSubtotal,
-        total: finalTotal,          
+        total: finalTotal,
         discount_total: finalDiscount,
         points_redeemed: usePoints ? pointsToUse : 0,
         points_earned: pointsEarned,
@@ -191,7 +191,7 @@ export default function Checkout() {
       };
 
       console.log('📤 Sending order data to backend:', orderData);
-      
+
       const response = await api.createOrder(orderData);
       console.log('✅ Order creation response:', response);
 
@@ -199,7 +199,7 @@ export default function Checkout() {
         setUserPoints(response.points_balance);
         localStorage.setItem('latest_points', response.points_balance.toString());
       }
-      
+
       return response;
 
     } catch (err) {
@@ -223,7 +223,7 @@ export default function Checkout() {
   const initPayHerePayment = async (order) => {
     try {
       console.log("🚀 Initializing PayHere checkout for order:", order.id);
-      
+
       // Match the backend expected structure
       const checkoutData = {
         order_id: order.id,  // This is the key field backend expects
@@ -237,13 +237,13 @@ export default function Checkout() {
       };
 
       console.log('📤 PayHere checkout data:', checkoutData);
-      
+
       const payhereResponse = await api.initPayHereCheckout(checkoutData);
       console.log('✅ PayHere response:', payhereResponse);
-      
+
       setPayHereFormData(payhereResponse);
       setShowPayHereModal(true);
-      
+
     } catch (err) {
       console.error('❌ PayHere initialization failed:', err);
       throw err;
@@ -254,12 +254,12 @@ export default function Checkout() {
   // In Checkout.jsx - Add mock payment option for development
   const handleMockPayment = async () => {
     setLoading(true);
-    
+
     try {
       // Create order as usual
       const order = await createOrder();
       console.log('✅ Mock order created:', order);
-      
+
       // Simulate successful payment after 2 seconds
       setTimeout(() => {
         setStage("paid");
@@ -267,7 +267,7 @@ export default function Checkout() {
         alert('Mock payment completed successfully!');
         navigate('/order-success?order_id=' + order.id);
       }, 2000);
-      
+
     } catch (err) {
       setError('Mock payment failed: ' + err.message);
       setLoading(false);
@@ -301,34 +301,34 @@ export default function Checkout() {
 
     try {
       console.log("🚀 Starting PayHere payment process...");
-      
+
       // 1. Create order first
       console.log("📦 Step 1: Creating order...");
       const order = await createOrder();
       console.log('✅ Order created successfully:', order);
-      
+
       if (!order || !order.id) {
         throw new Error("Order creation failed - no order ID returned");
       }
-      
+
       // 2. Initialize PayHere checkout
       console.log("💳 Step 2: Initializing PayHere checkout...");
       await initPayHerePayment(order);
-      
+
       // Order ID is saved for success page
       setOrderId(order.id);
-      
+
     } catch (err) {
       console.error("❌ Payment process failed:", err);
-      
+
       let errorMessage = err.message || "Payment failed. Please try again.";
-      
+
       if (err.message.includes("Network Error")) {
         errorMessage = "Network connection failed. Please check your internet.";
       } else if (err.message.includes("500")) {
         errorMessage = "Server error. Please contact support.";
       }
-      
+
       setError(errorMessage);
       setLoading(false);
     }
@@ -344,17 +344,17 @@ export default function Checkout() {
   // Handle successful PayHere payment (called from return URL)
   const handlePayHereSuccess = async () => {
     console.log("🎉 PayHere payment completed successfully!");
-    
+
     // Verify order status with backend
     if (orderId) {
       const status = await checkOrderStatus(orderId);
       console.log('✅ Final order status:', status);
     }
-    
+
     setStage("paid");
     clearCart();
     setShowPayHereModal(false);
-    
+
     window.dispatchEvent(new Event('orderCompleted'));
     localStorage.setItem('user_points_updated', Date.now().toString());
   };
@@ -373,7 +373,7 @@ export default function Checkout() {
   return (
     <section className="checkout">
       <h1>Checkout</h1>
-      
+
       {error && (
         <div className="error-message">
           {error}
@@ -387,19 +387,19 @@ export default function Checkout() {
           <div className="form-grid">
             <label>
               Full Name *
-              <input 
-                value={user.name} 
-                onChange={(e) => setUser({...user, name: e.target.value})}
+              <input
+                value={user.name}
+                onChange={(e) => setUser({ ...user, name: e.target.value })}
                 placeholder="Enter your full name"
                 required
               />
             </label>
             <label>
               Email *
-              <input 
-                type="email" 
+              <input
+                type="email"
                 value={user.email}
-                onChange={(e) => setUser({...user, email: e.target.value})}
+                onChange={(e) => setUser({ ...user, email: e.target.value })}
                 placeholder="Enter your email"
                 required
                 disabled={isAuthenticated}
@@ -412,27 +412,27 @@ export default function Checkout() {
             )}
             <label>
               Phone *
-              <input 
+              <input
                 value={user.phone}
-                onChange={(e) => setUser({...user, phone: e.target.value})}
-                placeholder="+94 ..." 
+                onChange={(e) => setUser({ ...user, phone: e.target.value })}
+                placeholder="+94 ..."
                 required
               />
             </label>
             <label>
               Address
-              <input 
+              <input
                 value={user.address}
-                onChange={(e) => setUser({...user, address: e.target.value})}
-                placeholder="Enter your address" 
+                onChange={(e) => setUser({ ...user, address: e.target.value })}
+                placeholder="Enter your address"
               />
             </label>
             <label>
               City
-              <input 
+              <input
                 value={user.city}
-                onChange={(e) => setUser({...user, city: e.target.value})}
-                placeholder="Enter your city" 
+                onChange={(e) => setUser({ ...user, city: e.target.value })}
+                placeholder="Enter your city"
               />
             </label>
           </div>
@@ -446,7 +446,7 @@ export default function Checkout() {
                   <strong>Available Points: {userPoints}</strong>
                   <span className="muted small"> (1 point = 1 LKR)</span>
                 </div>
-                
+
                 {userPoints > 0 ? (
                   <>
                     <label className="row">
@@ -457,7 +457,7 @@ export default function Checkout() {
                       />
                       Use my loyalty points
                     </label>
-                    
+
                     {usePoints && (
                       <div style={{ marginTop: '0.5rem' }}>
                         <div className="row" style={{ alignItems: 'center', gap: '0.5rem' }}>
@@ -492,15 +492,15 @@ export default function Checkout() {
 
           <h3 style={{ marginTop: ".8rem" }}>Promo Code</h3>
           <div className="row">
-            <input 
-              className="promo" 
-              value={promo} 
-              onChange={e => setPromo(e.target.value)} 
-              placeholder="Enter code e.g., PUZZLEDMX0JI" 
+            <input
+              className="promo"
+              value={promo}
+              onChange={e => setPromo(e.target.value)}
+              placeholder="Enter code e.g., PUZZLEDMX0JI"
               disabled={!!appliedPromo || checkingPromo}
             />
-            <button 
-              className="btn" 
+            <button
+              className="btn"
               onClick={appliedPromo ? removePromo : applyCode}
               disabled={checkingPromo}
             >
@@ -510,7 +510,7 @@ export default function Checkout() {
           {appliedPromo && (
             <div className="muted small" style={{ marginTop: ".3rem" }}>
               Applied: <strong>{appliedPromo.code}</strong> - {appliedPromo.message}
-              <button 
+              <button
                 onClick={removePromo}
                 style={{ marginLeft: '0.5rem', background: 'none', border: 'none', color: '#666', cursor: 'pointer' }}
               >
@@ -536,15 +536,15 @@ export default function Checkout() {
           </ul>
 
           <div className="line"><span>Subtotal</span><span>LKR {subTotal}</span></div>
-          
+
           {promoDiscount > 0 && (
             <div className="line"><span>Promo Discount</span><span>- LKR {promoDiscount}</span></div>
           )}
-          
+
           {pointsDiscount > 0 && isAuthenticated && (
             <div className="line"><span>Loyalty Points Discount</span><span>- LKR {pointsDiscount}</span></div>
           )}
-          
+
           <div className="line"><span>Taxes (8%)</span><span>LKR {taxes}</span></div>
           <div className="line total"><span>Total</span><span>LKR {grand}</span></div>
 
@@ -563,7 +563,7 @@ export default function Checkout() {
             onClick={handlePayment}
             disabled={items.length === 0 || loading || !user.name || !user.email || !user.phone}
           >
-            {loading ? "Preparing Payment..." : `Pay with PayHere - LKR ${grand}`}
+            {loading ? "Preparing Payment..." : `Pay with PayHere - LKR {grand}`}
           </button>
           <button
             className="btn btn-secondary"
@@ -581,7 +581,7 @@ export default function Checkout() {
 
       {/* PayHere Checkout Modal */}
       {showPayHereModal && payHereFormData && (
-        <PayHereCheckout 
+        <PayHereCheckout
           formData={payHereFormData}
           onClose={handlePayHereClose}
         />

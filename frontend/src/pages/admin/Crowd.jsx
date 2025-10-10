@@ -20,18 +20,18 @@ export default function AdminCrowd() {
     try {
       setLoading(true);
       setError(null);
-      
+
       // Get current crowd level - use getCurrentCrowd instead of getPredictions
       const currentData = await api.getCurrentCrowd();
       setCurrentCrowd(currentData);
-      
+
       // Get crowd history - this should now work
       const historyData = await api.getCrowdHistory(20);
       setHistory(historyData);
-      
+
       // Initialize grid with default predictions
       initializeGrid();
-      
+
     } catch (err) {
       console.error("Failed to load crowd data:", err);
       setError(`Failed to load crowd data: ${err.message}`);
@@ -43,14 +43,14 @@ export default function AdminCrowd() {
   // Initialize prediction grid
   const initializeGrid = () => {
     const schedule = {};
-    
+
     // Create default predictions based on time patterns
     days.forEach((day, dayIndex) => {
       hours.forEach(hour => {
         const key = `${dayIndex}-${hour}`;
         let state = "Normal";
         let confidence = 0.7;
-        
+
         // Pattern-based predictions
         if (hour >= 8 && hour <= 10) { // Morning rush
           state = "Busy";
@@ -68,7 +68,7 @@ export default function AdminCrowd() {
           state = hour >= 10 && hour <= 16 ? "Busy" : "Normal";
           confidence = 0.75;
         }
-        
+
         schedule[key] = {
           state,
           confidence,
@@ -76,7 +76,7 @@ export default function AdminCrowd() {
         };
       });
     });
-    
+
     setGrid(schedule);
   };
 
@@ -86,39 +86,39 @@ export default function AdminCrowd() {
       const key = `${dayIndex}-${hour}`;
       const current = grid[key]?.state || "Normal";
       const nextState = CROWD_STATES[current] || "Quiet";
-      
+
       // Update local state immediately for responsive UI
       setGrid(prev => ({
         ...prev,
-        [key]: { 
-          ...prev[key], 
-          state: nextState, 
+        [key]: {
+          ...prev[key],
+          state: nextState,
           isOverride: true,
-          confidence: 0.95 
+          confidence: 0.95
         }
       }));
 
       // Convert to crowd level (0-50) based on state
       const levelMap = { "Quiet": 10, "Normal": 25, "Busy": 40 };
       const level = levelMap[nextState] || 25;
-      
+
       // Send override to backend
       await api.sendFeedback({
         level: level,
         ttl_minutes: 60 // 1 hour override
       });
-      
+
       setSuccess(`Crowd level set to ${nextState} for ${days[dayIndex]} ${hour}:00`);
       setTimeout(() => setSuccess(""), 3000);
-      
+
       // Refresh current crowd data
       const updatedData = await api.getPredictions();
       setCurrentCrowd(updatedData);
-      
+
     } catch (err) {
       console.error("Failed to update crowd level:", err);
       setError(`Failed to update: ${err.message}`);
-      
+
       // Revert on error
       fetchCrowdData();
     }
@@ -143,7 +143,7 @@ export default function AdminCrowd() {
 
   useEffect(() => {
     fetchCrowdData();
-    
+
     // Refresh data every 2 minutes
     const interval = setInterval(fetchCrowdData, 120000);
     return () => clearInterval(interval);
@@ -164,7 +164,7 @@ export default function AdminCrowd() {
       <AdminTabs />
       <h1>Crowd Meter Management (AI-assisted)</h1>
       <p className="muted">
-        Real-time crowd monitoring and predictions. Click cells to override AI predictions.
+        Real-time crowd monitoring and predictions.
       </p>
 
       {error && (
@@ -196,16 +196,16 @@ export default function AdminCrowd() {
         </div>
       )}
 
-      {/* Current Crowd Status */}
+      {/* Current Crowd Status - Mobile Responsive */}
       <div className="card" style={{ marginBottom: "2rem" }}>
         <h3>Current Crowd Status</h3>
         {currentCrowd ? (
-          <div style={{ display: "flex", alignItems: "center", gap: "1rem", padding: "1rem" }}>
+          <div className="current-crowd-container">
             <div className={`crowd-indicator ${getCrowdColorClass(getCrowdDescription(currentCrowd.level))}`}>
               <div className="crowd-level">{currentCrowd.level}</div>
               <div className="crowd-label">{getCrowdDescription(currentCrowd.level)}</div>
             </div>
-            <div style={{ flex: 1 }}>
+            <div className="crowd-details">
               <p><strong>Source:</strong> {currentCrowd.source}</p>
               <p><strong>Last Updated:</strong> {new Date(currentCrowd.updated_at).toLocaleTimeString()}</p>
               <p><strong>Capacity:</strong> {currentCrowd.level}/50 people</p>
@@ -242,16 +242,14 @@ export default function AdminCrowd() {
                   {days.map((_, dayIndex) => {
                     const key = `${dayIndex}-${hour}`;
                     const cell = grid[key] || { state: "Normal", confidence: 0.5, isOverride: false };
-                    
+
                     return (
                       <td
                         key={key}
-                        className={`crowd-cell ${getCrowdColorClass(cell.state)} ${
-                          cell.isOverride ? "override" : ""
-                        }`}
-                        title={`${days[dayIndex]} ${hour}:00 - ${cell.state} (${Math.round(cell.confidence * 100)}% confidence)${
-                          cell.isOverride ? " - MANUAL OVERRIDE" : ""
-                        }`}
+                        className={`crowd-cell ${getCrowdColorClass(cell.state)} ${cell.isOverride ? "override" : ""
+                          }`}
+                        title={`${days[dayIndex]} ${hour}:00 - ${cell.state} (${Math.round(cell.confidence * 100)}% confidence)${cell.isOverride ? " - MANUAL OVERRIDE" : ""
+                          }`}
                         onClick={() => toggleCrowdState(dayIndex, hour)}
                       >
                         <div className="cell-content">
@@ -322,6 +320,69 @@ export default function AdminCrowd() {
           🔄 Refresh Data
         </button>
       </div>
+
+      {/* Mobile Responsive Styles */}
+      <style jsx>{`
+        .current-crowd-container {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          padding: 1rem;
+          flex-wrap: wrap;
+        }
+        
+        .crowd-details {
+          flex: 1;
+          min-width: 200px;
+        }
+        
+        @media (max-width: 768px) {
+          .current-crowd-container {
+            flex-direction: column;
+            text-align: center;
+            gap: 1.5rem;
+          }
+          
+          .crowd-details {
+            width: 100%;
+          }
+          
+          .crowd-details p {
+            margin: 0.5rem 0;
+            text-align: left;
+          }
+          
+          .history-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+            padding: 0.75rem;
+          }
+          
+          .status-badge, .source-badge {
+            align-self: flex-start;
+          }
+        }
+        
+        @media (max-width: 480px) {
+          .current-crowd-container {
+            padding: 0.75rem;
+          }
+          
+          .crowd-indicator {
+            width: 80px;
+            height: 80px;
+          }
+          
+          .crowd-level {
+            font-size: 1.25rem;
+          }
+          
+          .crowd-label {
+            font-size: 0.7rem;
+          }
+        }
+      `}</style>
     </section>
   );
 }

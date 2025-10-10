@@ -2,15 +2,16 @@
 .crowd-grid-container {
   overflow-x: auto;
   margin: 1rem 0;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
 }
 
 .crowd-table {
   width: 100%;
   border-collapse: collapse;
   background: white;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  min-width: 800px;
 }
 
 .crowd-table th,
@@ -25,6 +26,9 @@
   color: white;
   font-weight: bold;
   min-width: 60px;
+  position: sticky;
+  left: 0;
+  z-index: 2;
 }
 
 .day-header {
@@ -38,6 +42,9 @@
   background: #f8f8f8;
   font-weight: 600;
   color: #5b3a1a;
+  position: sticky;
+  left: 0;
+  z-index: 1;
 }
 
 .crowd-cell {
@@ -46,6 +53,7 @@
   position: relative;
   min-width: 80px;
   height: 60px;
+  user-select: none;
 }
 
 .crowd-cell:hover {
@@ -101,9 +109,17 @@
 }
 
 @keyframes pulse {
-  0% { opacity: 0.6; }
-  50% { opacity: 1; }
-  100% { opacity: 0.6; }
+  0% {
+    opacity: 0.6;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.6;
+  }
 }
 
 /* Crowd Indicator */
@@ -118,6 +134,7 @@
   color: white;
   font-weight: bold;
   text-align: center;
+  flex-shrink: 0;
 }
 
 .crowd-indicator.quiet {
@@ -166,11 +183,20 @@
   height: 16px;
   border-radius: 4px;
   display: inline-block;
+  flex-shrink: 0;
 }
 
-.legend-color.quiet { background: #d4edda; }
-.legend-color.normal { background: #fff3cd; }
-.legend-color.busy { background: #f8d7da; }
+.legend-color.quiet {
+  background: #d4edda;
+}
+
+.legend-color.normal {
+  background: #fff3cd;
+}
+
+.legend-color.busy {
+  background: #f8d7da;
+}
 
 /* History */
 .history-list {
@@ -195,6 +221,30 @@
   border-radius: 12px;
   font-size: 0.7rem;
   text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.status-badge.quiet {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status-badge.normal {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status-badge.busy {
+  background: #f8d7da;
+  color: #721c24;
 }
 
 /* Add these styles */
@@ -209,9 +259,17 @@
 }
 
 @keyframes pulse-override {
-  0% { border-color: #ff6b00; }
-  50% { border-color: #ffa726; }
-  100% { border-color: #ff6b00; }
+  0% {
+    border-color: #ff6b00;
+  }
+
+  50% {
+    border-color: #ffa726;
+  }
+
+  100% {
+    border-color: #ff6b00;
+  }
 }
 
 .override-indicator {
@@ -226,27 +284,176 @@
 }
 
 @keyframes blink {
-  0%, 50% { opacity: 1; }
-  51%, 100% { opacity: 0.3; }
+
+  0%,
+  50% {
+    opacity: 1;
+  }
+
+  51%,
+  100% {
+    opacity: 0.3;
+  }
 }
 
-/* Responsive */
+/* Enhanced Mobile Responsiveness */
 @media (max-width: 768px) {
   .crowd-table {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
+    min-width: 700px;
   }
-  
+
   .crowd-cell {
     height: 50px;
-    min-width: 60px;
+    min-width: 70px;
+    padding: 0.25rem;
   }
-  
+
   .state-text {
-    font-size: 0.7em;
+    font-size: 0.65em;
   }
-  
+
+  .confidence-badge {
+    font-size: 0.6em;
+    padding: 1px 3px;
+  }
+
+  .time-header,
+  .hour-cell {
+    min-width: 50px;
+    font-size: 0.7rem;
+  }
+
+  .day-header {
+    min-width: 70px;
+    font-size: 0.7rem;
+  }
+
   .legend-items {
     flex-direction: column;
     gap: 0.5rem;
+  }
+
+  .legend-item {
+    font-size: 0.9rem;
+  }
+
+  .crowd-grid-container {
+    margin: 0.5rem -1rem;
+    width: calc(100% + 2rem);
+    border-left: none;
+    border-right: none;
+    border-radius: 0;
+  }
+
+  .history-item {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .history-item .muted {
+    flex: 1;
+    min-width: 150px;
+  }
+}
+
+@media (max-width: 480px) {
+  .crowd-table {
+    min-width: 650px;
+    font-size: 0.7rem;
+  }
+
+  .crowd-cell {
+    height: 45px;
+    min-width: 65px;
+  }
+
+  .time-header,
+  .hour-cell {
+    min-width: 45px;
+  }
+
+  .day-header {
+    min-width: 65px;
+  }
+
+  .cell-content {
+    gap: 1px;
+  }
+
+  .state-text {
+    font-size: 0.6em;
+  }
+
+  .confidence-badge {
+    font-size: 0.55em;
+  }
+
+  .crowd-indicator {
+    width: 80px;
+    height: 80px;
+  }
+
+  .crowd-level {
+    font-size: 1.25rem;
+  }
+
+  .crowd-label {
+    font-size: 0.7rem;
+  }
+
+  .history-item {
+    padding: 0.75rem;
+  }
+
+  .history-item .muted {
+    font-size: 0.8rem;
+  }
+
+  .source-badge {
+    font-size: 0.65rem;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .crowd-cell:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .crowd-cell:active {
+    transform: scale(0.95);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .crowd-cell.quiet {
+    background: #e8f5e8;
+    border: 2px solid #155724;
+  }
+
+  .crowd-cell.normal {
+    background: #fef9e7;
+    border: 2px solid #856404;
+  }
+
+  .crowd-cell.busy {
+    background: #fdeaea;
+    border: 2px solid #721c24;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .crowd-cell {
+    transition: none;
+  }
+
+  .override-indicator,
+  .crowd-cell.override-active {
+    animation: none;
   }
 }

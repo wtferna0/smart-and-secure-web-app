@@ -1,13 +1,14 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import "./Navbar.css";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useCart } from "../context/CartContext.jsx";
 
-export default function Navbar(){
+export default function Navbar() {
   const { user, logout } = useAuth();
   const { setOpen } = useCart();
   const navigate = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const active = ({ isActive }) => isActive ? "nav-link active" : "nav-link";
 
@@ -16,7 +17,15 @@ export default function Navbar(){
       <div className="nav-inner">
         <Link className="brand" to="/">QWIK BREW</Link>
 
-        <nav className="nav-left">
+        {/* Hamburger button for mobile */}
+        <button
+          className="hamburger"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        >
+          ☰
+        </button>
+
+        <nav className={`nav-left ${mobileMenuOpen ? "open" : ""}`}>
           <NavLink className={active} to="/">Home</NavLink>
           <NavLink className={active} to="/menu">Menu</NavLink>
           <NavLink className={active} to="/about">About</NavLink>
@@ -25,20 +34,15 @@ export default function Navbar(){
         </nav>
 
         <nav className="nav-right">
-          {/* Admin entry only for staff users */}
           {user?.is_staff && (
             <NavLink className={active} to="/admin">Admin</NavLink>
           )}
-
-          {/* Profile for all logged-in users */}
           {user && !user?.is_staff && (
             <NavLink className={active} to="/profile">My Profile</NavLink>
           )}
 
-          {/* Cart always available */}
-          <button className="btn" onClick={()=>setOpen(true)}>Cart</button>
+          <button className="btn" onClick={() => setOpen(true)}>Cart</button>
 
-          {/* Auth buttons */}
           {!user && (
             <>
               <NavLink className="btn" to="/signup">Sign up</NavLink>
@@ -48,9 +52,9 @@ export default function Navbar(){
           {user && (
             <button
               className="btn"
-              onClick={()=>{
+              onClick={() => {
                 logout();
-                navigate("/"); // back to public
+                navigate("/");
               }}
             >
               Sign Out

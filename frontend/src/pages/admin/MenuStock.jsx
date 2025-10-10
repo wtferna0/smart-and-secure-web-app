@@ -4,7 +4,7 @@ import AdminTabs from "../../components/admin/AdminTabs.jsx";
 import Modal from "../../components/Modal.jsx";
 import { api } from "../../lib/api.js";
 
-export default function AdminMenuStock(){
+export default function AdminMenuStock() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -24,18 +24,18 @@ export default function AdminMenuStock(){
     try {
       setLoading(true);
       setError(null);
-      
+
       const [itemsData, categoriesData] = await Promise.all([
         api.getMenuItems(),
         api.getMenuCategories()
       ]);
-      
+
       console.log("📦 Menu items:", itemsData);
       console.log("📂 Categories:", categoriesData);
-      
+
       setItems(itemsData || []);
       setCategories(categoriesData || []);
-      
+
     } catch (err) {
       console.error("Failed to fetch menu data:", err);
       setError(`Failed to load menu data: ${err.message}`);
@@ -68,9 +68,9 @@ export default function AdminMenuStock(){
     return "Available";
   };
 
-  function onEdit(item){
-    setDraft({ 
-      ...item, 
+  function onEdit(item) {
+    setDraft({
+      ...item,
       category_id: item.category?.id || item.category,
       description: item.description || "",
       image: item.image || ""
@@ -79,13 +79,13 @@ export default function AdminMenuStock(){
     setOpen(true);
   }
 
-  function onAdd(){
-    setDraft({ 
-      name: "", 
-      description: "", 
-      category_id: categories[0]?.id || "", 
-      price: 0, 
-      stock_qty: 0, 
+  function onAdd() {
+    setDraft({
+      name: "",
+      description: "",
+      category_id: categories[0]?.id || "",
+      price: 0,
+      stock_qty: 0,
       is_active: true,
       image: ""
     });
@@ -99,7 +99,7 @@ export default function AdminMenuStock(){
 
     try {
       setSaving(true);
-      
+
       const itemData = {
         name: draft.name.trim(),
         description: draft.description?.trim() || "",
@@ -110,7 +110,7 @@ export default function AdminMenuStock(){
       };
 
       let savedItem;
-      
+
       if (adding) {
         // Create new item
         savedItem = await api.createMenuItem(itemData);
@@ -119,14 +119,14 @@ export default function AdminMenuStock(){
       } else {
         // Update existing item
         savedItem = await api.updateMenuItem(draft.id, itemData);
-        setItems(prev => prev.map(item => 
+        setItems(prev => prev.map(item =>
           item.id === draft.id ? savedItem : item
         ));
         showSuccess("Item updated successfully!");
       }
-      
+
       setOpen(false);
-      
+
     } catch (err) {
       console.error("Failed to save item:", err);
       alert(`Failed to save item: ${err.message}`);
@@ -153,7 +153,7 @@ export default function AdminMenuStock(){
   async function onToggleActive(item) {
     try {
       const updatedItem = await api.toggleMenuItemActive(item.id);
-      setItems(prev => prev.map(i => 
+      setItems(prev => prev.map(i =>
         i.id === item.id ? updatedItem : i
       ));
       showSuccess(`Item ${updatedItem.is_active ? 'activated' : 'deactivated'} successfully!`);
@@ -166,7 +166,7 @@ export default function AdminMenuStock(){
   async function onUpdateStock(item, newStock) {
     try {
       const updatedItem = await api.updateMenuItemStock(item.id, newStock);
-      setItems(prev => prev.map(i => 
+      setItems(prev => prev.map(i =>
         i.id === item.id ? updatedItem : i
       ));
       showSuccess("Stock quantity updated successfully!");
@@ -215,190 +215,231 @@ export default function AdminMenuStock(){
         </div>
       )}
 
-      {/* KPI Cards */}
-      <div className="grid kpis">
-        <div className="card kpi"><span>Total Items</span><strong>{totals.total}</strong></div>
-        <div className="card kpi"><span>Available</span><strong>{totals.available}</strong></div>
-        <div className="card kpi"><span>Low Stock</span><strong>{totals.low}</strong></div>
-        <div className="card kpi"><span>Out of Stock</span><strong>{totals.out}</strong></div>
+      {/* KPI Cards - Mobile Responsive */}
+      <div className="grid kpis" style={{
+        gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+        gap: "0.75rem",
+        marginBottom: "1.5rem"
+      }}>
+        <div className="card kpi">
+          <span>Total Items</span>
+          <strong>{totals.total}</strong>
+        </div>
+        <div className="card kpi">
+          <span>Available</span>
+          <strong>{totals.available}</strong>
+        </div>
+        <div className="card kpi">
+          <span>Low Stock</span>
+          <strong>{totals.low}</strong>
+        </div>
+        <div className="card kpi">
+          <span>Out of Stock</span>
+          <strong>{totals.out}</strong>
+        </div>
       </div>
 
-      {/* Action Bar */}
-      <div className="row" style={{marginBottom:"10px", gap: "0.5rem"}}>
-        <button className="btn btn-primary" onClick={onAdd}>＋ Add Item</button>
-        <button className="btn" onClick={fetchMenuData}>🔄 Refresh</button>
+      {/* Action Bar - Mobile Responsive */}
+      <div className="row" style={{
+        marginBottom: "1rem",
+        gap: "0.5rem",
+        flexWrap: "wrap"
+      }}>
+        <button className="btn btn-primary" onClick={onAdd}>
+          ＋ Add Item
+        </button>
+        <button className="btn" onClick={fetchMenuData}>
+          🔄 Refresh
+        </button>
       </div>
 
-      {/* Menu Items Table */}
+      {/* Menu Items Table - Mobile Responsive */}
       <div className="card tbl">
         <h3>Menu Items ({items.length})</h3>
         {items.length === 0 ? (
-          <p className="muted" style={{textAlign: "center", padding: "2rem"}}>
+          <p className="muted" style={{ textAlign: "center", padding: "2rem" }}>
             No menu items found. <button className="btn-link" onClick={onAdd}>Add your first item</button>
           </p>
         ) : (
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Item</th>
-                <th>Category</th>
-                <th>Price</th>
-                <th>Stock</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((item, i) => {
-                const badge = getStockBadge(item);
-                const status = getStatusText(item);
-                
-                return (
-                  <tr key={item.id}>
-                    <td>
-                      <div className="row" style={{alignItems:"center", gap:".6rem"}}>
-                        {item.image ? (
-                          <img 
-                            src={item.image} 
-                            alt={item.name}
-                            style={{
+          <div className="table-responsive">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th className="hide-on-mobile">Category</th>
+                  <th>Price</th>
+                  <th>Stock</th>
+                  <th className="hide-on-mobile">Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {items.map((item, i) => {
+                  const badge = getStockBadge(item);
+                  const status = getStatusText(item);
+
+                  return (
+                    <tr key={item.id}>
+                      <td>
+                        <div className="row" style={{ alignItems: "center", gap: ".6rem" }}>
+                          {item.image ? (
+                            <img
+                              src={item.image}
+                              alt={item.name}
+                              style={{
+                                width: 32,
+                                height: 32,
+                                borderRadius: 8,
+                                objectFit: "cover",
+                                backgroundColor: "#f5f5f5"
+                              }}
+                              onError={(e) => {
+                                e.target.style.display = 'none';
+                              }}
+                            />
+                          ) : (
+                            <div style={{
                               width: 32,
                               height: 32,
                               borderRadius: 8,
-                              objectFit: "cover",
-                              backgroundColor: "#f5f5f5"
-                            }}
-                            onError={(e) => {
-                              e.target.style.display = 'none';
-                            }}
-                          />
-                        ) : (
-                          <div style={{
-                            width: 32,
-                            height: 32,
-                            borderRadius: 8,
-                            backgroundColor: "#e9ecef",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            fontSize: "12px",
-                            color: "#6c757d"
-                          }}>
-                            📷
-                          </div>
-                        )}
-                        <div>
-                          <strong>{item.name}</strong>
-                          {item.description && (
-                            <div className="muted small" style={{maxWidth: "200px"}}>
-                              {item.description}
+                              backgroundColor: "#e9ecef",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              fontSize: "12px",
+                              color: "#6c757d"
+                            }}>
+                              📷
                             </div>
                           )}
+                          <div style={{ minWidth: 0 }}>
+                            <strong style={{
+                              display: "block",
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              maxWidth: "150px"
+                            }}>
+                              {item.name}
+                            </strong>
+                            {item.description && (
+                              <div className="muted small" style={{
+                                whiteSpace: "nowrap",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                maxWidth: "150px"
+                              }}>
+                                {item.description}
+                              </div>
+                            )}
+                            <div className="show-on-mobile-only" style={{ marginTop: "0.25rem" }}>
+                              <span className="pill small">
+                                {item.category?.name || "Uncategorized"}
+                              </span>
+                              <div className={`status-mobile ${status === "Out of Stock" || !item.is_active ? "bad" : ""}`}>
+                                {status}
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td>
-                      <span className="pill">
-                        {item.category?.name || "Uncategorized"}
-                      </span>
-                    </td>
-                    <td>${parseFloat(item.price).toFixed(2)}</td>
-                    <td>
-                      <div style={{display: "flex", alignItems: "center", gap: "0.5rem"}}>
-                        <span>{item.stock_qty}</span>
-                        {badge && (
-                          <span className={`badge ${badge.class}`}>
-                            {badge.text}
-                          </span>
-                        )}
-                        <button 
-                          className="btn-link small"
-                          onClick={() => {
-                            const newStock = prompt(`Enter new stock quantity for ${item.name}:`, item.stock_qty);
-                            if (newStock !== null && !isNaN(newStock)) {
-                              onUpdateStock(item, parseInt(newStock));
-                            }
-                          }}
-                          title="Update stock"
-                        >
-                          ✏️
-                        </button>
-                      </div>
-                    </td>
-                    <td className={status === "Out of Stock" || !item.is_active ? "bad" : ""}>
-                      {status}
-                    </td>
-                    <td>
-                      <div style={{display: "flex", gap: "0.25rem"}}>
-                        <button 
-                          className="btn btn-ghost" 
-                          onClick={() => onEdit(item)}
-                          title="Edit item"
-                        >
-                          ✏️
-                        </button>
-                        <button 
-                          className="btn btn-ghost" 
-                          onClick={() => onToggleActive(item)}
-                          title={item.is_active ? "Deactivate" : "Activate"}
-                        >
-                          {item.is_active ? "⏸️" : "▶️"}
-                        </button>
-                        <button 
-                          className="btn btn-ghost" 
-                          onClick={() => onDelete(item, i)}
-                          title="Delete item"
-                        >
-                          🗑️
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                      </td>
+                      <td className="hide-on-mobile">
+                        <span className="pill">
+                          {item.category?.name || "Uncategorized"}
+                        </span>
+                      </td>
+                      <td>
+                        <strong>${parseFloat(item.price).toFixed(2)}</strong>
+                      </td>
+                      <td>
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                          <span>{item.stock_qty}</span>
+                          {badge && (
+                            <span className={`badge ${badge.class}`}>
+                              {badge.text}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className={`hide-on-mobile ${status === "Out of Stock" || !item.is_active ? "bad" : ""}`}>
+                        {status}
+                      </td>
+                      <td>
+                        <div className="actions-container" style={{
+                          display: "flex",
+                          gap: "0.25rem",
+                          flexWrap: "wrap"
+                        }}>
+                          <button
+                            className="btn btn-ghost btn-icon"
+                            onClick={() => onEdit(item)}
+                            title="Edit item"
+                          >
+                            ✏️
+                          </button>
+                          <button
+                            className="btn btn-ghost btn-icon"
+                            onClick={() => onToggleActive(item)}
+                            title={item.is_active ? "Deactivate" : "Activate"}
+                          >
+                            {item.is_active ? "⏸️" : "▶️"}
+                          </button>
+                          <button
+                            className="btn btn-ghost btn-icon"
+                            onClick={() => onDelete(item, i)}
+                            title="Delete item"
+                          >
+                            🗑️
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 
-      {/* Add/Edit Modal */}
+      {/* Add/Edit Modal - Mobile Responsive */}
       <Modal open={open} title={adding ? "Add Menu Item" : "Edit Menu Item"} onClose={() => setOpen(false)}>
         {draft && (
           <form onSubmit={onSave}>
             <label>
               Image URL
-              <input 
-                value={draft.image || ""} 
-                onChange={e => setDraft(d => ({...d, image: e.target.value}))}
+              <input
+                value={draft.image || ""}
+                onChange={e => setDraft(d => ({ ...d, image: e.target.value }))}
                 placeholder="/images/menu/item.jpg"
               />
             </label>
-            
+
             <label>
               Name *
-              <input 
-                required 
-                value={draft.name} 
-                onChange={e => setDraft(d => ({...d, name: e.target.value}))}
+              <input
+                required
+                value={draft.name}
+                onChange={e => setDraft(d => ({ ...d, name: e.target.value }))}
                 placeholder="e.g., Cappuccino"
               />
             </label>
-            
+
             <label>
               Description
-              <textarea 
-                rows="3" 
-                value={draft.description || ""} 
-                onChange={e => setDraft(d => ({...d, description: e.target.value}))}
+              <textarea
+                rows="3"
+                value={draft.description || ""}
+                onChange={e => setDraft(d => ({ ...d, description: e.target.value }))}
                 placeholder="Describe this menu item..."
               />
             </label>
-            
+
             <label>
               Category *
-              <select 
-                value={draft.category_id} 
-                onChange={e => setDraft(d => ({...d, category_id: e.target.value}))}
+              <select
+                value={draft.category_id}
+                onChange={e => setDraft(d => ({ ...d, category_id: e.target.value }))}
                 required
               >
                 <option value="">Select a category</option>
@@ -409,42 +450,51 @@ export default function AdminMenuStock(){
                 ))}
               </select>
             </label>
-            
-            <div style={{display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem"}}>
+
+            <div className="form-columns" style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+              gap: "1rem"
+            }}>
               <label>
                 Price (USD) *
-                <input 
-                  type="number" 
-                  step="0.01" 
+                <input
+                  type="number"
+                  step="0.01"
                   min="0"
-                  value={draft.price} 
-                  onChange={e => setDraft(d => ({...d, price: e.target.value}))}
+                  value={draft.price}
+                  onChange={e => setDraft(d => ({ ...d, price: e.target.value }))}
                   required
                 />
               </label>
-              
+
               <label>
                 Stock Quantity *
-                <input 
-                  type="number" 
+                <input
+                  type="number"
                   min="0"
-                  value={draft.stock_qty} 
-                  onChange={e => setDraft(d => ({...d, stock_qty: e.target.value}))}
+                  value={draft.stock_qty}
+                  onChange={e => setDraft(d => ({ ...d, stock_qty: e.target.value }))}
                   required
                 />
               </label>
             </div>
-            
-            <label style={{display: "flex", alignItems: "center", gap: "0.5rem"}}>
-              <input 
-                type="checkbox" 
+
+            <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <input
+                type="checkbox"
                 checked={draft.is_active !== false}
-                onChange={e => setDraft(d => ({...d, is_active: e.target.checked}))}
+                onChange={e => setDraft(d => ({ ...d, is_active: e.target.checked }))}
               />
               Available on menu
             </label>
 
-            <div className="modal-actions">
+            <div className="modal-actions" style={{
+              display: "flex",
+              gap: "0.5rem",
+              justifyContent: "flex-end",
+              flexWrap: "wrap"
+            }}>
               <button type="button" className="btn" onClick={() => setOpen(false)} disabled={saving}>
                 Cancel
               </button>
@@ -455,6 +505,81 @@ export default function AdminMenuStock(){
           </form>
         )}
       </Modal>
+
+      {/* Mobile Responsive CSS */}
+      <style jsx>{`
+        .table-responsive {
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+        }
+        
+        .table {
+          width: 100%;
+          min-width: 600px;
+        }
+        
+        .btn-icon {
+          padding: 0.5rem;
+          min-width: auto;
+        }
+        
+        .status-mobile {
+          font-size: 0.75rem;
+          margin-top: 0.25rem;
+        }
+        
+        .pill.small {
+          font-size: 0.7rem;
+          padding: 0.2rem 0.5rem;
+        }
+        
+        @media (max-width: 768px) {
+          .hide-on-mobile {
+            display: none;
+          }
+          
+          .show-on-mobile-only {
+            display: block;
+          }
+          
+          .kpi {
+            padding: 0.75rem;
+            text-align: center;
+          }
+          
+          .kpi span {
+            font-size: 0.8rem;
+          }
+          
+          .kpi strong {
+            font-size: 1.2rem;
+          }
+          
+          .actions-container {
+            justify-content: center;
+          }
+        }
+        
+        @media (min-width: 769px) {
+          .show-on-mobile-only {
+            display: none;
+          }
+        }
+        
+        @media (max-width: 480px) {
+          .form-columns {
+            grid-template-columns: 1fr;
+          }
+          
+          .modal-actions {
+            flex-direction: column;
+          }
+          
+          .modal-actions .btn {
+            width: 100%;
+          }
+        }
+      `}</style>
     </section>
   );
 }

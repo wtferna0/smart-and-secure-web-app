@@ -1,15 +1,15 @@
 import React, { useState } from "react";
 import "./contact.css";
 
-export default function Contact(){
+export default function Contact() {
   const [form, setForm] = useState({
-    name:"", email:"", phone:"", type:"", subject:"", message:""
+    name: "", email: "", phone: "", type: "", subject: "", message: ""
   });
 
-  function onSubmit(e){
+  function onSubmit(e) {
     e.preventDefault();
-    alert("Message submitted. We’ll get back to you soon.");
-    setForm({ name:"", email:"", phone:"", type:"", subject:"", message:"" });
+    alert("Message submitted. We'll get back to you soon.");
+    setForm({ name: "", email: "", phone: "", type: "", subject: "", message: "" });
   }
 
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
@@ -21,7 +21,7 @@ export default function Contact(){
           <h1>Get in Touch</h1>
           <p className="lead">
             Have a question, suggestion, or just want to say hello?
-            We’d love to hear from you.
+            We'd love to hear from you.
           </p>
           <div className="tags">
             <span>Support</span><span>Orders</span><span>Events</span><span>Partnerships</span>
@@ -81,10 +81,22 @@ export default function Contact(){
         <aside className="card side">
           <h3>Contact Information</h3>
           <ul className="info-list">
-            <li><span className="i i-pin" /> 288 Sri Jayawardenepura Mawatha, Sri Jayawardenepura Kotte</li>
-            <li><span className="i i-phone" /> (011)1234567</li>
-            <li><span className="i i-mail" /> hello@qwikbrew.com</li>
-            <li><span className="i i-time" /> Mon–Sun: 9:00 AM – 9:00 PM</li>
+            <li>
+              <span className="i i-pin" aria-hidden="true" />
+              288 Sri Jayawardenepura Mawatha, Sri Jayawardenepura Kotte
+            </li>
+            <li>
+              <span className="i i-phone" aria-hidden="true" />
+              (011) 123 4567
+            </li>
+            <li>
+              <span className="i i-mail" aria-hidden="true" />
+              hello@qwikbrew.com
+            </li>
+            <li>
+              <span className="i i-time" aria-hidden="true" />
+              Mon–Sun: 9:00 AM – 9:00 PM
+            </li>
           </ul>
 
           <h4 className="mt">Quick Info</h4>
@@ -96,7 +108,7 @@ export default function Contact(){
           </ul>
 
           <div className="mini-cta">
-            <p>Prefer talking? We’re happy to chat.</p>
+            <p>Prefer talking? We're happy to chat.</p>
             <a className="btn" href="tel:+1555123BREW">Call Now</a>
           </div>
         </aside>
@@ -106,14 +118,14 @@ export default function Contact(){
       <div className="faq">
         {[
           ["Do you offer catering services?",
-           "Yes! Contact us to discuss packages and pricing."],
+            "Yes! Contact us to discuss packages and pricing."],
           ["Can I reserve space for private events?",
-           "Absolutely—we have areas for private bookings."],
+            "Absolutely—we have areas for private bookings."],
           ["Do you have dietary accommodations?",
-           "Yes—ask our staff about dairy-free, gluten-free, and vegan options."],
+            "Yes—ask our staff about dairy-free, gluten-free, and vegan options."],
           ["Is Wi-Fi really free?",
-           "Yes, high-speed and unlimited for all customers."],
-        ].map(([q,a])=>(
+            "Yes, high-speed and unlimited for all customers."],
+        ].map(([q, a]) => (
           <details key={q} className="card faq-item">
             <summary>{q}</summary>
             <p>{a}</p>
