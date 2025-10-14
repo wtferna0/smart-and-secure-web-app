@@ -2,7 +2,6 @@ from django.db import models
 from django.contrib.auth.models import User
 import uuid
 
-
 class Order(models.Model):
     class Status(models.TextChoices):
         PENDING_PAYMENT = "PENDING_PAYMENT"
@@ -28,6 +27,7 @@ class Order(models.Model):
 
     placed_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         indexes = [
@@ -38,15 +38,13 @@ class Order(models.Model):
     def __str__(self):
         return self.order_token
 
-# orders/models.py
 class OrderItem(models.Model):
     order = models.ForeignKey('orders.Order', on_delete=models.CASCADE)
-    menu_item = models.ForeignKey('catalog.MenuItem', on_delete=models.PROTECT, null=True, blank=True)  # <- ensure this
+    menu_item = models.ForeignKey('catalog.MenuItem', on_delete=models.PROTECT, null=True, blank=True)
     item_name = models.CharField(max_length=255)
     price_each = models.DecimalField(max_digits=10, decimal_places=2)
     qty = models.PositiveIntegerField()
     line_total = models.DecimalField(max_digits=10, decimal_places=2)
-
 
     def __str__(self):
         return f"{self.item_name} x{self.qty}"

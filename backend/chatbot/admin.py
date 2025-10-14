@@ -14,6 +14,6 @@ class ChatMenuItemAdmin(admin.ModelAdmin):
 
 @admin.register(ChatOrder)
 class ChatOrderAdmin(admin.ModelAdmin):
-    list_display = ("id","customer","status","total_price","created_at")
+    list_display = ("id","customer","status","total","created_at")
     list_filter = ("status",)
     search_fields = ("customer__email",)

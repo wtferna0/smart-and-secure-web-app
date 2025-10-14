@@ -1,4 +1,3 @@
-# loyalty/models.py - UPDATE to match your MySQL schema
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
@@ -8,21 +7,17 @@ class PromoCode(models.Model):
         PERCENT = "PERCENT"
         AMOUNT = "AMOUNT"
 
-    # Match your MySQL schema exactly
     code = models.CharField(max_length=40, unique=True)
     discount_type = models.CharField(max_length=10, choices=Type.choices, default=Type.AMOUNT)
     amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     min_order_total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    active = models.BooleanField(default=True)  # Changed from is_active to active
+    active = models.BooleanField(default=True) 
     max_redemptions = models.IntegerField(null=True, blank=True)
-    current_redemptions = models.IntegerField(default=0)  # Added this field
-    end_date = models.DateField(null=True, blank=True)  # Changed from ends_at to end_date
-    start_date = models.DateField(null=True, blank=True)  # Changed from starts_at to start_date
+    current_redemptions = models.IntegerField(default=0) 
+    end_date = models.DateField(null=True, blank=True) 
+    start_date = models.DateField(null=True, blank=True) 
     is_puzzle_reward = models.BooleanField(default=False)
     puzzle_points_required = models.IntegerField(default=0)
-    
-    # Remove created_at since it's not in your MySQL schema
-    # created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.code
@@ -47,22 +42,26 @@ class PromoCode(models.Model):
         return True
 
     @property
-    def is_active(self):
-        """Alias for active field to maintain compatibility"""
-        return self.active
+    def type(self):
+        return self.discount_type
 
     @property
-    def ends_at(self):
-        """Alias for end_date to maintain compatibility"""
+    def value(self):
+        return self.amount
+
+    @property
+    def max_uses(self):
+        return self.max_redemptions
+
+    @property
+    def expires_at(self):
         return self.end_date
 
     @property
-    def starts_at(self):
-        """Alias for start_date to maintain compatibility"""
-        return self.start_date
+    def is_active(self):
+        return self.active
 
 class UserPromo(models.Model):
-    # Match your MySQL schema exactly
     promo = models.ForeignKey(PromoCode, on_delete=models.PROTECT)
     order = models.ForeignKey("orders.Order", on_delete=models.RESTRICT, null=True, blank=True)
     user = models.ForeignKey(User, null=True, blank=True, on_delete=models.RESTRICT)
@@ -96,12 +95,12 @@ class PointsTransaction(models.Model):
     ]
     
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    points = models.IntegerField()  # Can be positive (earned) or negative (redeemed)
+    points = models.IntegerField()
     transaction_type = models.CharField(max_length=10, choices=TRANSACTION_TYPES)
     source = models.CharField(max_length=20, choices=SOURCE_TYPES)
     order = models.ForeignKey('orders.Order', on_delete=models.SET_NULL, null=True, blank=True)
     description = models.TextField(blank=True)
-    balance_after = models.IntegerField()  # Balance after this transaction
+    balance_after = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:

@@ -1,68 +1,47 @@
+from django.views.generic import TemplateView
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status, generics
+from rest_framework import generics
+from rest_framework import status
 from .models import ChatMenuItem, ChatOrder
 from .serializers import MenuItemSerializer, OrderSerializer
-import logging
-from .services import (
-    get_or_create_customer, intent_menu, intent_order_status, intent_loyalty,
-    intent_hours, intent_location, intent_crowd
-)
+from . import services
+from .intents import detect_intent
 
-logger = logging.getLogger(__name__)
+class ChatbotPageView(TemplateView):
+    template_name = "chatbot/chat.html"
 
+@method_decorator(csrf_exempt, name="dispatch")
 class ChatbotQueryView(APIView):
     def post(self, request):
-        try:
-            msg = (request.data.get("message") or "").strip().lower()
-            email = (request.data.get("email") or "").strip().lower()
-            name = (request.data.get("name") or "").strip()
-            
-            logger.info(f"Chatbot query: {msg} from {email}")
-            
-            customer = get_or_create_customer(email, name) if email else None
-            
-            if not msg:
-                return Response({
-                    "reply": "Hi! I'm your Brew assistant ☕ How can I help? Try 'menu', 'order status', 'loyalty', 'hours', 'location', or 'crowd'."
-                })
-            
-            # Intent mapping
-            intents = {
-                'menu': intent_menu,
-                'order status': intent_order_status,
-                'loyalty': intent_loyalty, 
-                'points': intent_loyalty,
-                'hours': intent_hours,
-                'open': intent_hours,
-                'time': intent_hours,
-                'location': intent_location,
-                'where': intent_location,
-                'address': intent_location,
-                'crowd': intent_crowd,
-                'busy': intent_crowd
-            }
-            
-            # Find matching intent
-            for intent_key, intent_func in intents.items():
-                if intent_key in msg:
-                    data = intent_func(customer)
-                    break
-            else:
-                data = {
-                    "reply": "Sorry, I didn't understand. Try 'menu', 'order status', 'loyalty', 'hours', 'location', or 'crowd'."
-                }
-            
-            return Response(data, status=status.HTTP_200_OK)
-            
-        except Exception as e:
-            logger.error(f"Chatbot error: {str(e)}")
+        message = (request.data.get("message") or request.data.get("text") or "").strip()
+        email = (request.data.get("email") or "").strip()
+
+        intent, score, _ = detect_intent(message)
+
+        if intent == "menu":
+            return Response(services.intent_menu(), 200)
+        elif intent == "order_status":
+            return Response(services.intent_order_status(email=email, text=message), 200)
+        elif intent == "loyalty":
+            return Response(services.intent_loyalty(email=email), 200)
+        elif intent == "hours":
+            return Response(services.intent_hours(), 200)
+        elif intent == "location":
+            return Response(services.intent_location(), 200)
+        elif intent == "crowd":
+            return Response(services.intent_crowd(), 200)
+        else:
             return Response({
-                "reply": "Sorry, I'm having trouble right now. Please try again in a moment."
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            
+                "reply": "I didn't quite get that. I can try a smarter answer — press 'Ask AI' or rephrase.",
+                "ai_fallback": True,
+                "suggestions": ["menu","order status","loyalty","hours","location","crowd"]
+            }, 200)
+
 class MenuListView(generics.ListAPIView):
-    queryset = ChatMenuItem.objects.all().order_by("category","name")
+    queryset = ChatMenuItem.objects.filter(is_available=True).order_by("category","name")
     serializer_class = MenuItemSerializer
 
 class OrderDetailView(generics.RetrieveAPIView):

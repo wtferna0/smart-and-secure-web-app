@@ -16,8 +16,7 @@ class MenuItem(models.Model):
     is_active = models.BooleanField(default=True)
     stock_qty = models.PositiveIntegerField(default=0)
     rating = models.DecimalField(max_digits=3, decimal_places=1, default=4.5)  
-    
-    # Improved image field with better upload path
+
     image = models.ImageField(
         upload_to="menu_images/%Y/%m/%d/", 
         null=True, 
@@ -39,13 +38,17 @@ class MenuItem(models.Model):
         return None
     
     def save(self, *args, **kwargs):
-        # Delete old image when new one is uploaded
-        try:
-            old = MenuItem.objects.get(pk=self.pk)
-            if old.image and old.image != self.image:
-                old.image.delete(save=False)
-        except MenuItem.DoesNotExist:
-            pass
+        if self.pk:
+            try:
+                old = MenuItem.objects.get(pk=self.pk)
+                if old.image and old.image != self.image:
+                    try:
+                        if os.path.isfile(old.image.path):
+                            old.image.delete(save=False)
+                    except (ValueError, Exception):
+                        pass
+            except MenuItem.DoesNotExist:
+                pass
         super().save(*args, **kwargs)
 
 class ItemStockMovement(models.Model):
@@ -56,8 +59,8 @@ class ItemStockMovement(models.Model):
         CORRECTION = "CORRECTION", "Correction"
         WASTAGE = "WASTAGE", "Wastage"
 
-    menu_item = models.ForeignKey("catalog.MenuItem", on_delete=models.PROTECT)
-    delta_qty = models.IntegerField()  # +in / -out
+    menu_item = models.ForeignKey("MenuItem", on_delete=models.PROTECT)
+    delta_qty = models.IntegerField() 
     reason = models.CharField(max_length=16, choices=Reason.choices, default=Reason.ADJUST)
     ref_order = models.ForeignKey("orders.Order", null=True, blank=True, on_delete=models.SET_NULL)
     note = models.CharField(max_length=255, blank=True, null=True)

@@ -2,24 +2,20 @@ from django.db import models
 
 class ChatCustomer(models.Model):
     email = models.EmailField(unique=True)
-    name = models.CharField(max_length=120, blank=True)
+    name = models.CharField(max_length=120, blank=True, default="")
     loyalty_points = models.PositiveIntegerField(default=0)
     def __str__(self): return self.email
 
 class ChatMenuItem(models.Model):
-    CATEGORY_CHOICES = [("Coffee","Coffee"),("Tea","Tea"),("Pastry","Pastry"),("Sandwich","Sandwich")]
-    name = models.CharField(max_length=200)
-    description = models.TextField(blank=True)
-    price = models.DecimalField(max_digits=8, decimal_places=2)
-    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
-    image_url = models.URLField(blank=True)
-    def __str__(self): return self.name
+    name = models.CharField(max_length=120)
+    category = models.CharField(max_length=80)
+    price = models.DecimalField(max_digits=7, decimal_places=2)
+    is_available = models.BooleanField(default=True)
+    def __str__(self): return f"{self.name} ({self.category})"
 
 class ChatOrder(models.Model):
-    STATUS_CHOICES = [("placed","Placed"),("preparing","Preparing"),("ready","Ready"),("completed","Completed")]
-    customer = models.ForeignKey(ChatCustomer, on_delete=models.SET_NULL, null=True, blank=True)
-    items = models.ManyToManyField(ChatMenuItem, blank=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="placed")
-    total_price = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    customer = models.ForeignKey(ChatCustomer, on_delete=models.CASCADE, null=True, blank=True)
+    status = models.CharField(max_length=32, default="PLACED")
     created_at = models.DateTimeField(auto_now_add=True)
-    def __str__(self): return f"Order {self.id}"
+    total = models.DecimalField(max_digits=9, decimal_places=2, default=0)
+    def __str__(self): return f"Order #{self.id} - {self.status}"

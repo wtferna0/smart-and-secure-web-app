@@ -4,15 +4,14 @@ from .models import ChatMenuItem, ChatOrder, ChatCustomer
 class MenuItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChatMenuItem
-        fields = ["id","name","description","price","category","image_url"]
+        fields = ["id","name","category","price","is_available"]
 
 class OrderSerializer(serializers.ModelSerializer):
-    items = MenuItemSerializer(many=True, read_only=True)
     class Meta:
         model = ChatOrder
-        fields = ["id","status","total_price","created_at","items"]
+        fields = ["id","status","created_at","total"]
 
 class CustomerSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChatCustomer
-        fields = ["id","email","name","loyalty_points"]
+        fields = ["email","name","loyalty_points"]

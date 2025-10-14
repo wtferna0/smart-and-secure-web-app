@@ -1,4 +1,3 @@
-# loyalty/serializers.py
 from rest_framework import serializers
 from .models import PromoCode, UserPromo
 
@@ -8,7 +7,7 @@ class PromoCodeSerializer(serializers.ModelSerializer):
     class Meta:
         model = PromoCode
         fields = ['id', 'code', 'discount_type', 'amount', 'min_order_total', 
-                 'is_active', 'is_valid', 'is_puzzle_reward']
+                 'active', 'is_valid', 'is_puzzle_reward']
 
 class PointsRedemptionSerializer(serializers.Serializer):
     points = serializers.IntegerField(min_value=1)

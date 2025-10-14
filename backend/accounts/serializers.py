@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
-from .models import UserProfile  # Make sure this import is there
+from .models import UserProfile 
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, style={"input_type": "password"})
@@ -23,7 +23,6 @@ class RegisterSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
-        # Extract UserProfile fields from validated_data
         profile_data = {
             'display_name': validated_data.pop('display_name', ''),
             'phone': validated_data.pop('phone', ''),
@@ -68,7 +67,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = [
             "id", "username", "email", "first_name", "last_name", 
             "is_staff", "is_superuser", "is_active", "date_joined", "last_login",
-            # Profile fields
+            
             "display_name", "phone", "contact_email", "points_balance", 
             "paid_order_count", "default_currency", "marketing_opt_in",
             "profile_created_at", "profile_updated_at"

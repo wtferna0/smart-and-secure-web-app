@@ -1,42 +1,32 @@
-from typing import Optional, Dict
-from django.db.models import Count
-from django.utils import timezone
-from datetime import timedelta
-from .adapters import (
-    get_or_create_customer, list_categories, sample_menu_items, latest_order_for_customer
-)
+from datetime import datetime
+from typing import Dict, Any
+from .adapters import sample_menu_items, latest_order_for, get_or_create_customer
 
-def intent_menu() -> Dict:
-    cats = list(sorted(set(list_categories())))
-    sample = list(sample_menu_items(5))
-    return {"reply":"Here are some categories and sample items.","categories":cats,"sample":sample}
+def intent_menu() -> Dict[str, Any]:
+    items = sample_menu_items(8)
+    if not items:
+        return {"reply": "Our menu is being updated. Please check back soon."}
+    lines = [f"- {i['name']} ({i['category']}): LKR {i['price']}" for i in items]
+    return {"reply": "Here are some popular items:\n" + "\n".join(lines)}
 
-def intent_order_status(customer) -> Dict:
-    if not customer:
-        return {"reply":"To check order status, please provide your email."}
-    order = latest_order_for_customer(customer)
+def intent_hours() -> Dict[str, Any]:
+    return {"reply": "We're open daily from 8:00 AM to 8:00 PM."}
+
+def intent_location() -> Dict[str, Any]:
+    return {"reply": "We’re at 123 Cafe Street, Colombo 07. Parking available across the road."}
+
+def intent_crowd() -> Dict[str, Any]:
+    now = datetime.now().strftime("%I:%M %p")
+    return {"reply": f"As of {now}, we’re moderately busy. Best time is usually 3–5 PM."}
+
+def intent_loyalty(email: str = "") -> Dict[str, Any]:
+    cust = get_or_create_customer(email or None)
+    if not cust:
+        return {"reply": "Tell me your email to check points, e.g., 'my email is you@example.com'."}
+    return {"reply": f"You have {cust.loyalty_points} loyalty points."}
+
+def intent_order_status(email: str = "", text: str = "") -> Dict[str, Any]:
+    order = latest_order_for(email or None)
     if not order:
-        return {"reply":"I couldn't find any orders for you yet."}
-    return {"reply": f"Your latest order #{order.id} is '{order.status}'.", "order_id": order.id}
-
-def intent_loyalty(customer) -> Dict:
-    if not customer:
-        return {"reply":"Please share your email to check loyalty points."}
-    return {"reply": f"You have {customer.loyalty_points} loyalty points."}
-
-def intent_hours() -> Dict:
-    return {"reply":"We’re open daily 8:00–22:00 (Asia/Colombo)."}
-
-def intent_location() -> Dict:
-    return {"reply":"We are at 123 Café Street, Colombo."}
-
-def intent_crowd() -> Dict:
-    from .models import ChatOrder
-    now = timezone.now()
-    since = now - timedelta(hours=12)
-    buckets = (
-        ChatOrder.objects.filter(created_at__gte=since)
-        .extra(select={'hour': "strftime('%%H', created_at)"})
-        .values('hour').annotate(count=Count('id')).order_by('hour')
-    )
-    return {"reply":"Crowd levels for the last 12 hours.","buckets": list(buckets)}
+        return {"reply": "I couldn’t find a recent order for you. If you placed one, share your email."}
+    return {"reply": f"Your latest order #{order.id} is {order.status}. Total: LKR {order.total}."}

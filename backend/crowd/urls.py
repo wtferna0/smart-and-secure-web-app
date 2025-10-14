@@ -1,4 +1,3 @@
-# backend/crowd/urls.py
 from django.urls import path
 from .views import current, history, override, crowd_prediction
 

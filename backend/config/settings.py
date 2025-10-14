@@ -11,34 +11,31 @@ def env(key, default=None):
 
 try:
     from dotenv import load_dotenv
-    load_dotenv(BASE_DIR / ".env")  # load from project .env explicitly
+    load_dotenv(BASE_DIR / ".env")
 except Exception:
     pass
 
 # --- Core Django --------------------------------------------------------------
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-insecure")
-# accept 1/true/yes/on
 DEBUG = os.getenv("DJANGO_DEBUG", "0").strip().lower() in ("1", "true", "yes", "on")
 ALLOWED_HOSTS = [
     h.strip() for h in os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1,51.20.9.106,cafe-app.duckdns.org,172.31.34.189").split(",") if h.strip()
 ]
 
 INSTALLED_APPS = [
-    # Django
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # Third-party
+
     "rest_framework",
     "rest_framework_simplejwt",
     "corsheaders",
     "drf_spectacular",
     "django_filters",
-   
-    # Your apps
+
     "accounts",
     "catalog.apps.CatalogConfig",
     "orders.apps.OrdersConfig",
@@ -52,7 +49,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "corsheaders.middleware.CorsMiddleware",  # keep CORS before CommonMiddleware
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -85,25 +82,29 @@ ASGI_APPLICATION = "config.asgi.application"
 DB_ENGINE = os.getenv("DB_ENGINE", "mysql").lower()
 if DB_ENGINE == "mysql":
     DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'cafedb',
-        'USER': 'admin',
-        'PASSWORD': '050812Km*',
-        'HOST': 'cafedb.cxkqk02iupbr.eu-north-1.rds.amazonaws.com',
-        'PORT': '3306',
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'cafedb',
+            'USER': 'admin',
+            'PASSWORD': '050812Km*',
+            'HOST': 'cafedb.cxkqk02iupbr.eu-north-1.rds.amazonaws.com',
+            'PORT': '3306',
+            'OPTIONS': {
+                'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            }
+        }
     }
-}
 else:
     DATABASES = {
         "default": {
-            "ENGINE": "django.db.backends.sqlite3",  # Default to SQLite if not MySQL
-            "NAME": BASE_DIR / "db.sqlite3",  # SQLite location
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
         }
     }
+
 # --- i18n / tz ---------------------------------------------------------------
 LANGUAGE_CODE = "en-us"
-TIME_ZONE = "Asia/Colombo"   # store in UTC, display Colombo
+TIME_ZONE = "Asia/Colombo"
 USE_I18N = True
 USE_TZ = True
 
@@ -118,7 +119,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        # Keep JWT as primary; add SessionAuth for browsable API/admin convenience
         "rest_framework_simplejwt.authentication.JWTAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ],
@@ -128,10 +128,9 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 100,
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
-
     "DEFAULT_THROTTLE_RATES": {
-        "crowdmeter_burst": "10/min",   # allow 10 requests per minute
-        "crowdmeter_sustained": "100/hour",  # if you also have sustained
+        "crowdmeter_burst": "10/minute",
+        "crowdmeter_sustained": "100/hour",
     }
 }
 
@@ -150,7 +149,6 @@ SPECTACULAR_SETTINGS = {
 # --- CORS / CSRF -------------------------------------------------------------
 _raw_cors = os.getenv("CORS_ALLOWED_ORIGINS", "")
 
-# comma-separated list in .env, e.g. http://localhost:3000,http://127.0.0.1:5173
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = [o.strip() for o in _raw_cors.split(",") if o.strip()]
 if DEBUG and not CORS_ALLOWED_ORIGINS:
@@ -164,8 +162,6 @@ if DEBUG and not CORS_ALLOWED_ORIGINS:
         "http://cafe-app.duckdns.org",
         "https://cafe-app.duckdns.org",
     ]
-
-
 
 CORS_ALLOW_CREDENTIALS = True
 
@@ -183,7 +179,6 @@ if DEBUG and not CSRF_TRUSTED_ORIGINS:
         "https://51.20.9.106:3000",
         "https://cafe-app.duckdns.org",
         "http://cafe-app.duckdns.org",
-        # Add these for PayHere IPN
         "https://sandbox.payhere.lk",
         "https://www.sandbox.payhere.lk",
     ]
@@ -217,29 +212,31 @@ LOGGING = {
     },
 }
 
+# --- Crowd Meter Configuration -----------------------------------------------
 CROWD_METER = {
-    "MODE": "ml",   # change to "ml" after training (step 6)
+    "MODE": "ml",
     "WINDOW_MINUTES": 30,
-    "BIN_MINUTES": 5,      # feature time-bins
-    "ACTIVE_STATUSES": ["ACCEPTED", "PREPARING", "READY"],
-    "STATUS_WEIGHTS": {"ACCEPTED": 1.0, "PREPARING": 0.8, "READY": 0.4},
+    "BIN_MINUTES": 15,
+    "ACTIVE_STATUSES": ["PLACED", "ACCEPTED", "DONE"],
+    "STATUS_WEIGHTS": {"PLACED": 1.0, "ACCEPTED": 0.8, "DONE": 0.4},
     "PEOPLE_PER_ORDER": 1.3,
     "CAPACITY": 50,
     "SMOOTHING_ALPHA": 0.35,
     "ORDER_MODEL": "orders.Order",
-    "STATUS_FIELD": "status",
+    "STATUS_FIELD": "status", 
     "CREATED_FIELD": "placed_at",
-    "MODEL_PATH": BASE_DIR / "crowd" / "model_assets" / "crowd_model.pkl",
+    "MODEL_PATH": str(BASE_DIR / "crowd" / "model_assets" / "crowd_model.pkl"),
     "TRAIN_LOOKBACK_DAYS": 14,
 }
 
+# --- PayHere Configuration ---------------------------------------------------
 PAYHERE = {
-    "MERCHANT_ID": "1232370",  # Your actual merchant ID from PayHere dashboard
-    "MERCHANT_SECRET": "MjQ4OTgxOTI3MzEyMDk0Nzc0MDU1NTU0MzM2OTkzNDExNjkxODU2",  # Your actual secret
-    "CHECKOUT_URL": "https://sandbox.payhere.lk/pay/checkout",  # Sandbox
-    "RETURN_URL": "https://cafe-app.duckdns.org/order-success",  # Must be absolute URL
-    "CANCEL_URL": "https://cafe-app.duckdns.org/order-cancelled",  # Must be absolute URL
-    "NOTIFY_URL": "https://cafe-app.duckdns.org/api/payments/payhere/ipn/",  # Must be absolute URL
+    "MERCHANT_ID": "1232370",
+    "MERCHANT_SECRET": "MjQ4OTgxOTI3MzEyMDk0Nzc0MDU1NTU0MzM2OTkzNDExNjkxODU2",
+    "CHECKOUT_URL": "https://sandbox.payhere.lk/pay/checkout",
+    "RETURN_URL": "https://cafe-app.duckdns.org/order-success",
+    "CANCEL_URL": "https://cafe-app.duckdns.org/order-cancelled",
+    "NOTIFY_URL": "https://cafe-app.duckdns.org/api/payments/payhere/ipn/",
 }
 
 DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'

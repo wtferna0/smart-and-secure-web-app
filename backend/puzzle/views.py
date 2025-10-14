@@ -1,4 +1,3 @@
-# puzzle/views.py - UPDATE the CompletePuzzleView
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, generics
@@ -24,26 +23,21 @@ class StartPuzzleView(APIView):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-# puzzle/views.py - SIMPLEST VERSION (no validation)
+# puzzle/views.py
 class CompletePuzzleView(APIView):
     def post(self, request):
-        print("🔍 CompletePuzzleView called with:", request.data)
+        print("CompletePuzzleView called with:", request.data)
         
         try:
-            # Try to extract values with defaults
             data = request.data
             
-            # Use get() with defaults to avoid KeyErrors
             sid = data.get('session_id') or data.get('sessionId') or 0
             moves = data.get('moves') or data.get('moveCount') or 0
             time_ms = data.get('time_ms') or data.get('timeMs') or 0
             
-            # Convert to integers (will convert 0 if missing)
             sid = int(sid)
             moves = int(moves) 
             time_ms = int(time_ms)
-            
-            print(f"✅ Processing - session_id: {sid}, moves: {moves}, time_ms: {time_ms}")
             
             s = PuzzleSession.objects.get(id=sid)
             
@@ -95,13 +89,10 @@ class SessionDetailView(generics.RetrieveAPIView):
     queryset = PuzzleSession.objects.all()
     serializer_class = PuzzleSessionSerializer
 
-# puzzle/views.py - ADD this temporary view
 class DebugPuzzleView(APIView):
-    """Temporary view to debug the 500 error"""
     def post(self, request):
         import traceback
         try:
-            # Test the award_loyalty function directly
             from .adapters import award_loyalty
             
             test_email = "test@example.com"

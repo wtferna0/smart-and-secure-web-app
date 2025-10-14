@@ -2,17 +2,26 @@ from django.conf import settings
 from django.apps import apps
 from django.utils import timezone
 from datetime import timedelta
-import numpy as np, pandas as pd, joblib
+import numpy as np
+import pandas as pd
+import joblib
+from pathlib import Path
 
 _CACHE = {"bundle": None}
 
-def C(): return getattr(settings, "CROWD_METER", {})
+def C(): 
+    return getattr(settings, "CROWD_METER", {})
 
 def load_model():
     if _CACHE["bundle"] is None:
         try:
-            _CACHE["bundle"] = joblib.load(C().get("MODEL_PATH"))
-        except Exception:
+            model_path = C().get("MODEL_PATH")
+            if model_path:
+                if isinstance(model_path, str):
+                    model_path = Path(model_path)
+                _CACHE["bundle"] = joblib.load(model_path)
+        except Exception as e:
+            print(f"Error loading model: {e}")
             _CACHE["bundle"] = None
     return _CACHE["bundle"]
 
@@ -26,18 +35,25 @@ def _time_feats(df, ts):
 
 def build_features_now():
     cfg = C()
-    Order = apps.get_model(cfg.get("ORDER_MODEL","orders.Order"))
-    tsf = cfg.get("CREATED_FIELD","placed_at")
-    sf  = cfg.get("STATUS_FIELD","status")
-    bin_m = int(cfg.get("BIN_MINUTES",5))
-    window = int(cfg.get("WINDOW_MINUTES",30))
+    try:
+        Order = apps.get_model(cfg.get("ORDER_MODEL", "orders.Order"))
+    except LookupError:
+        now = timezone.now()
+        bin_m = int(cfg.get("BIN_MINUTES", 5))
+        bin_start = pd.Timestamp(now).tz_convert("UTC").floor(f"{bin_m}min")
+        b = pd.DataFrame({"bin_start": [bin_start]})
+        return _time_feats(b, "bin_start")
+
+    tsf = cfg.get("CREATED_FIELD", "placed_at")
+    sf = cfg.get("STATUS_FIELD", "status")
+    bin_m = int(cfg.get("BIN_MINUTES", 5))
+    window = int(cfg.get("WINDOW_MINUTES", 30))
 
     now = timezone.now()
     since = now - timedelta(minutes=window)
     qs = Order.objects.filter(**{f"{tsf}__gte": since}).values(tsf, sf)
     
     if not qs.exists():
-        # FIXED: Handle timezone properly
         bin_start = pd.Timestamp(now).tz_convert("UTC").floor(f"{bin_m}min")
         b = pd.DataFrame({"bin_start": [bin_start]})
         return _time_feats(b, "bin_start")
@@ -70,12 +86,19 @@ def predict_level_now():
     bundle = load_model()
     if not bundle:
         return None
+    
     feat_row = build_features_now()
     feat_cols = bundle["meta"]["feature_cols"]
+    
     for c in feat_cols:
         if c not in feat_row.columns:
             feat_row[c] = 0
-    X = feat_row[feat_cols].astype(float).values
-    yhat = float(bundle["model"].predict(X)[0])
-    cap = int(C().get("CAPACITY", 50))
-    return max(0, min(int(round(yhat)), cap))
+    
+    try:
+        X = feat_row[feat_cols].astype(float).values
+        yhat = float(bundle["model"].predict(X)[0])
+        cap = int(C().get("CAPACITY", 50))
+        return max(0, min(int(round(yhat)), cap))
+    except Exception as e:
+        print(f"Prediction error: {e}")
+        return None

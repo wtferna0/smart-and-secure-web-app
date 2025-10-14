@@ -1,8 +1,3 @@
-# from django.contrib import admin
-# from .models import Order, OrderItem, OrderStatusEvent
-# admin.site.register(Order)
-# admin.site.register(OrderItem)
-# admin.site.register(OrderStatusEvent)
 from django.contrib import admin
 from .models import Order, OrderItem, OrderStatusEvent
 

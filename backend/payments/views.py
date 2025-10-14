@@ -1,18 +1,15 @@
-# payments/views.py
 import uuid
 from datetime import datetime
-from decimal import Decimal
-
+from decimal import Decimal, InvalidOperation
 from django.conf import settings
+from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
-
 from rest_framework import mixins, viewsets, status as http_status
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
-
 from .models import Payment
 from .serializers import PaymentCreateSerializer
 from .utils import payhere_verify_md5sig
@@ -21,21 +18,29 @@ from orders.models import Order, OrderStatusEvent
 
 class PaymentViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     """
-    POST /api/payments/  -> create payment (marks order as PAID)
+    POST /api/payments/ ,  create payment 
     """
     queryset = Payment.objects.all()
     serializer_class = PaymentCreateSerializer
+    permission_classes = [IsAuthenticated]
 
 
 class PayHereCheckoutCreate(APIView):
-    permission_classes = [AllowAny]  # Change from IsAuthenticatedOrReadOnly to AllowAny
+    permission_classes = [AllowAny]
     
     def post(self, request):
         data = request.data or {}
-        order = get_object_or_404(Order, pk=data.get("order_id"))
+        order_id = data.get("order_id")
+        
+        if not order_id:
+            return Response(
+                {"detail": "Order ID is required."},
+                status=http_status.HTTP_400_BAD_REQUEST,
+            )
+            
+        order = get_object_or_404(Order, pk=order_id)
 
-        # Only allow payment from valid states
-        if order.status not in [Order.Status.PENDING_PAYMENT, Order.Status.PLACED]:
+        if order.status not in ["PENDING_PAYMENT", "PLACED", "PENDING"]:
             return Response(
                 {"detail": "Order not payable in current state."},
                 status=http_status.HTTP_400_BAD_REQUEST,
@@ -43,20 +48,19 @@ class PayHereCheckoutCreate(APIView):
 
         cfg = settings.PAYHERE
         amount = f"{order.total:.2f}"
-        currency = "LKR"  # PayHere (Sri Lanka)
+        currency = "LKR"
 
         # Generate UNIQUE payment reference to prevent duplicates
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
         unique_id = uuid.uuid4().hex[:6]
         payment_ref = f"PH-{order.id}-{timestamp}-{unique_id}"
 
-        # Create a Payment row in PENDING; provider ref will be updated on IPN
         payment = Payment.objects.create(
             provider=Payment.Provider.PAYHERE,
-            payment_ref=payment_ref,  # Now unique every time
+            payment_ref=payment_ref,
             amount=Decimal(amount),
             currency=currency,
-            status="PENDING",
+            status=Payment.Status.PENDING,
             order=order,
             created_by=request.user if request.user.is_authenticated else None,
         )
@@ -68,23 +72,22 @@ class PayHereCheckoutCreate(APIView):
             "cancel_url": cfg["CANCEL_URL"],
             "notify_url": cfg["NOTIFY_URL"],
 
-            "order_id": str(order.id),              # your identifier; echoed back in IPN
-            "items": f"Order {order.order_token}",  # description visible to customer
+            "order_id": str(order.id),
+            "items": f"Order {order.order_token}",
             "currency": currency,
             "amount": amount,
 
             # Customer details
             "first_name": data.get("first_name", "Guest"),
             "last_name": data.get("last_name", "Customer"),
-            "email": data.get("email") or order.guest_email or "",
+            "email": data.get("email") or getattr(order, 'guest_email', ''),
             "phone": data.get("phone", ""),
             "address": data.get("address", ""),
             "city": data.get("city", ""),
             "country": data.get("country", "Sri Lanka"),
 
-            # Optional passthrough for faster reconciliation
-            "custom_1": str(payment.id),        # Payment row id
-            "custom_2": order.order_token,      # extra reference
+            "custom_1": str(payment.id),
+            "custom_2": getattr(order, 'order_token', ''),
         }
 
         if order.total <= 0:
@@ -98,82 +101,100 @@ class PayHereCheckoutCreate(APIView):
             "form_fields": form_fields,
         })
 
-
-# ---------------------------
-# PayHere IPN (webhook) view
-# ---------------------------
-
 STATUS_MAP = {
-    "2": "PAID",        # success
-    "0": "PENDING",
-    "-1": "CANCELLED",
-    "-2": "FAILED",
-    "-3": "FAILED",     # treat chargeback as FAILED internally (or add explicit status if needed)
+    "2": Payment.Status.PAID,
+    "0": Payment.Status.PENDING,
+    "-1": Payment.Status.CANCELLED,
+    "-2": Payment.Status.FAILED,
+    "-3": Payment.Status.FAILED,
 }
 
 @csrf_exempt
 @api_view(["POST"])
-@permission_classes([AllowAny])   # PayHere servers are unauthenticated
+@permission_classes([AllowAny])
+@transaction.atomic
 def payhere_ipn(request):
     p = request.POST
 
-    # 1) Verify signature
+    # Verify signature
     if not payhere_verify_md5sig(p):
         return Response({"ok": False, "reason": "bad_signature"}, status=http_status.HTTP_400_BAD_REQUEST)
 
-    # 2) Pull key fields
+    # Pull key fields
     merchant_id = p.get("merchant_id")
-    order_id = p.get("order_id")                     # your reference (we set this to Order.id)
-    payment_id = p.get("payment_id")                 # PayHere txn id
+    order_id = p.get("order_id")                     
+    payment_id = p.get("payment_id")                 
     payhere_amount = p.get("payhere_amount")
     payhere_currency = p.get("payhere_currency")
-    status_code = p.get("status_code")               # '2','0','-1','-2','-3'
+    status_code = p.get("status_code")               
     status_message = p.get("status_message", "")
     method = p.get("method", "")
 
-    # 3) Find the order & existing Payment row (order_id is enough here)
-    order = get_object_or_404(Order, pk=order_id)
+    if not order_id:
+        return Response({"ok": False, "reason": "missing_order_id"}, status=http_status.HTTP_400_BAD_REQUEST)
+
+    # Find the order & existing Payment row
+    order = get_object_or_404(Order.objects.select_for_update(), pk=order_id)
 
     payment = (
         Payment.objects.filter(order=order, provider=Payment.Provider.PAYHERE)
         .order_by("-created_at")
         .first()
-    ) or Payment(order=order, provider=Payment.Provider.PAYHERE)
+    )
+    
+    if not payment:
+        # Create new payment record if none exists
+        payment = Payment(
+            order=order, 
+            provider=Payment.Provider.PAYHERE,
+            payment_ref=payment_id or f"PH-{order_id}-{uuid.uuid4().hex[:8]}"
+        )
 
     # Update/record payment details
     if payhere_amount:
-        payment.amount = Decimal(payhere_amount)
+        try:
+            amount_str = str(payhere_amount).replace(',', '')
+            payment.amount = Decimal(amount_str)
+        except (InvalidOperation, TypeError, ValueError):
+            payment.amount = Decimal('0.00')
+            
     if payhere_currency:
         payment.currency = payhere_currency
+        
     if payment_id:
         payment.payment_ref = payment_id
 
-    payment.status = STATUS_MAP.get(status_code, "FAILED")
-    # Store raw payload if your model has this JSON/TextField
+    payment.status = STATUS_MAP.get(status_code, Payment.Status.FAILED)
+    
+    # Store raw payload
     try:
         payment.raw_payload = {k: p.get(k) for k in p.keys()}
     except Exception:
-        # If raw_payload field doesn't exist, just ignore
-        pass
+        payment.raw_payload = {}
+        
     payment.save()
 
-    # 4) Update order status transitions you want
+    # Update order status transitions
     prev = order.status
+    # Update order status transitions
     if status_code == "2":
-        # Success → mark order as PLACED/PAID and let the normal flow continue
-        order.status = getattr(Order.Status, "PLACED", "PLACED")
-    elif status_code == "0":
-        order.status = getattr(Order.Status, "PENDING_PAYMENT", "PENDING_PAYMENT")
-    elif status_code in ("-1", "-2", "-3"):
-        order.status = getattr(Order.Status, "FAILED", "FAILED")
-    order.save(update_fields=["status"])
+        with transaction.atomic():
+            # Idempotency: only one PLACED event per order
+            already = OrderStatusEvent.objects.filter(
+                order=order,
+                to_status=Order.Status.PLACED,
+            ).exists()
 
-    # Record the transition
-    OrderStatusEvent.objects.create(
-        order=order,
-        from_status=prev,
-        to_status=order.status,
-        note=f"PayHere {status_message or status_code} ({method})"
-    )
+            if not already:
+                if order.status != Order.Status.PLACED:
+                    order.status = Order.Status.PLACED
+                    order.save(update_fields=["status"])
 
-    return Response({"ok": True})
+                OrderStatusEvent.objects.get_or_create(
+                    order=order,
+                    to_status=Order.Status.PLACED,
+                    defaults={"note": "IPN"},
+                )
+        return Response(status=204)
+
+    return Response(status=204)

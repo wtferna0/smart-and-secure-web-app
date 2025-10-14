@@ -4,18 +4,17 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.db.models import Q
 
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .serializers import RegisterSerializer, UserSerializer
+from .serializers import RegisterSerializer, UserSerializer, UserProfileSerializer
+from .models import UserProfile
 
-# Customize login to include some extra claims in the token response (optional)
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
-        # extra claims for frontend convenience
         token["username"] = user.username
         token["is_staff"] = user.is_staff
         return token
@@ -32,10 +31,11 @@ class RegisterView(generics.CreateAPIView):
     permission_classes = [permissions.AllowAny]
     serializer_class = RegisterSerializer
 
-    # Optionally return tokens after signup (auto-login)
     def create(self, request, *args, **kwargs):
-        resp = super().create(request, *args, **kwargs)
-        user = User.objects.get(username=resp.data["username"])
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        
         refresh = RefreshToken.for_user(user)
         return Response(
             {
@@ -48,13 +48,13 @@ class RegisterView(generics.CreateAPIView):
 
 class MeView(APIView):
     permission_classes = [permissions.IsAuthenticated]
+    
     def get(self, request):
         return Response(UserSerializer(request.user).data)
 
 class LogoutView(APIView):
     """
     Blacklist the given refresh token so it can't be used again.
-    Requires SIMPLE_JWT token_blacklist app installed.
     """
     permission_classes = [permissions.IsAuthenticated]
 
@@ -62,13 +62,12 @@ class LogoutView(APIView):
         try:
             token = request.data.get("refresh")
             if not token:
-                return Response({"detail": "refresh token required"}, status=400)
+                return Response({"detail": "refresh token required"}, status=status.HTTP_400_BAD_REQUEST)
             RefreshToken(token).blacklist()
-            return Response({"detail": "logged out"}, status=205)
-        except Exception:
-            return Response({"detail": "invalid refresh"}, status=400)
+            return Response({"detail": "logged out"}, status=status.HTTP_205_RESET_CONTENT)
+        except Exception as e:
+            return Response({"detail": "invalid refresh token"}, status=status.HTTP_400_BAD_REQUEST)
 
-# Admin User Management Views
 class AdminUserListView(generics.ListAPIView):
     """
     Admin view to list all users with their profiles
@@ -78,7 +77,6 @@ class AdminUserListView(generics.ListAPIView):
     queryset = User.objects.all().order_by('-date_joined')
     
     def get_queryset(self):
-        # Prefetch related profile to avoid N+1 queries
         return super().get_queryset().select_related('profile')
 
 class AdminUserDetailView(generics.RetrieveUpdateAPIView):
@@ -90,6 +88,9 @@ class AdminUserDetailView(generics.RetrieveUpdateAPIView):
     queryset = User.objects.all()
     lookup_field = 'id'
 
+    def get_queryset(self):
+        return super().get_queryset().select_related('profile')
+
     def update(self, request, *args, **kwargs):
         """
         Handle updates to both User and UserProfile models
@@ -100,7 +101,6 @@ class AdminUserDetailView(generics.RetrieveUpdateAPIView):
         user_data = {}
         profile_data = {}
         
-        # Define which fields belong to User vs UserProfile
         user_fields = ['first_name', 'last_name', 'email', 'is_active']
         profile_fields = ['display_name', 'phone', 'contact_email', 'points_balance', 
                          'default_currency', 'marketing_opt_in']
@@ -119,7 +119,7 @@ class AdminUserDetailView(generics.RetrieveUpdateAPIView):
         
         # Update UserProfile model
         if profile_data:
-            profile = user.profile
+            profile, created = UserProfile.objects.get_or_create(user=user)
             for field, value in profile_data.items():
                 setattr(profile, field, value)
             profile.save()
@@ -157,22 +157,20 @@ class AdminUserProfileUpdateView(APIView):
     def patch(self, request, user_id):
         try:
             user = User.objects.get(id=user_id)
-            profile = user.profile
+            profile, created = UserProfile.objects.get_or_create(user=user)
             
             # Update allowed profile fields
             serializer = UserProfileSerializer(
                 profile, 
                 data=request.data, 
-                partial=True  # Allow partial updates
+                partial=True
             )
             
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data)
             
-            return Response(serializer.errors, status=400)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             
         except User.DoesNotExist:
-            return Response({"detail": "User not found"}, status=404)
-        except UserProfile.DoesNotExist:
-            return Response({"detail": "User profile not found"}, status=404)
+            return Response({"detail": "User not found"}, status=status.HTTP_404_NOT_FOUND)

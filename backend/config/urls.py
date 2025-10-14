@@ -1,19 +1,18 @@
 from django.contrib import admin
 from django.urls import path, include
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
-from django.conf import settings  # Add this import
+from django.conf import settings
 from django.views.generic import TemplateView
-from django.conf.urls.static import static  # Add this import
+from django.conf.urls.static import static
 
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/catalog/", include("catalog.urls")),
     path("api/", include("orders.urls")),
-    path("api/", include("payments.urls")),  # <-- add this
+    path("api/", include("payments.urls")),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="docs"),
-
     path('api/auth/', include('accounts.urls')),
     path('api/payments/', include('payments.urls')),
     path('api/chatbot/', include('chatbot.urls')),
