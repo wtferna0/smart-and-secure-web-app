@@ -3,7 +3,7 @@
 ## Install
 ```bash
 cd backend
-pip install -r requirements.txt    # your normal deps
+pip install -r requirements.txt    
 pip install -r requirements-dev.txt
 ```
 
