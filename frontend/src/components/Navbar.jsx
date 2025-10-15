@@ -6,11 +6,18 @@ import { useCart } from "../context/CartContext.jsx";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
-  const { setOpen } = useCart();
+  const { setOpen, cartItems = [], getCartTotal = () => 0 } = useCart();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const active = ({ isActive }) => isActive ? "nav-link active" : "nav-link";
+
+  // Calculate total items in cart
+  const totalItems = Array.isArray(cartItems) 
+    ? cartItems.reduce((total, item) => total + (item.quantity || 0), 0)
+    : 0;
+
+  const hasItems = totalItems > 0;
 
   return (
     <header className="nav">
@@ -41,7 +48,18 @@ export default function Navbar() {
             <NavLink className={active} to="/profile">My Profile</NavLink>
           )}
 
-          <button className="btn" onClick={() => setOpen(true)}>Cart</button>
+          <button 
+            className="btn cart-btn" 
+            onClick={() => setOpen(true)}
+            style={styles.cartButton}
+          >
+            Cart
+            {hasItems && (
+              <span style={styles.cartBadge}>
+                {totalItems}
+              </span>
+            )}
+          </button>
 
           {!user && (
             <>
@@ -65,3 +83,28 @@ export default function Navbar() {
     </header>
   );
 }
+
+const styles = {
+  cartButton: {
+    position: "relative",
+    display: "flex",
+    alignItems: "center",
+    gap: "8px"
+  },
+  cartBadge: {
+    position: "absolute",
+    top: "-8px",
+    right: "-8px",
+    backgroundColor: "#dc2626",
+    color: "white",
+    borderRadius: "50%",
+    width: "20px",
+    height: "20px",
+    fontSize: "12px",
+    fontWeight: "bold",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    lineHeight: 1
+  }
+};

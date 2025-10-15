@@ -230,7 +230,7 @@ export default function Profile(){
         if (discountType === 'PERCENT') {
           discountDesc = `${amount}% off`;
         } else if (discountType === 'AMOUNT') {
-          discountDesc = `LKR ${parseFloat(amount).toFixed(2)} off`;
+          discountDesc = `$ ${parseFloat(amount).toFixed(2)} off`;
         } else {
           discountDesc = `Discount: ${amount}`;
         }
@@ -241,7 +241,7 @@ export default function Profile(){
         
         // Add minimum order requirement if exists
         if (minOrderTotal && parseFloat(minOrderTotal) > 0) {
-          discountDesc += ` (Min order: LKR ${parseFloat(minOrderTotal).toFixed(2)})`;
+          discountDesc += ` (Min order: $ ${parseFloat(minOrderTotal).toFixed(2)})`;
         }
 
         rewards.push({
@@ -423,7 +423,7 @@ export default function Profile(){
               <div className="muted">Total Orders</div>
             </div>
             <div className="stat">
-              <div className="big">LKR {totalSpent.toLocaleString()}</div>
+              <div className="big">$ {totalSpent.toLocaleString()}</div>
               <div className="muted">Total Spent</div>
             </div>
             <div className="stat">
@@ -485,11 +485,11 @@ export default function Profile(){
                             <div className="item-info">
                               <span className="item-name">{item.item_name || 'Unknown Item'}</span>
                               <span className="item-meta">
-                                Qty: {item.qty || 1} × LKR {(parseFloat(item.price_each) || 0).toFixed(2)}
+                                Qty: {item.qty || 1} × $ {(parseFloat(item.price_each) || 0).toFixed(2)}
                               </span>
                             </div>
                             <div className="item-total">
-                              LKR {((parseFloat(item.price_each) || 0) * (item.qty || 1)).toFixed(2)}
+                              $ {((parseFloat(item.price_each) || 0) * (item.qty || 1)).toFixed(2)}
                             </div>
                           </div>
                         ))
@@ -499,11 +499,11 @@ export default function Profile(){
                             <div className="item-info">
                               <span className="item-name">{item.item_name || 'Unknown Item'}</span>
                               <span className="item-meta">
-                                Qty: {item.qty || 1} × LKR {(parseFloat(item.price_each) || 0).toFixed(2)}
+                                Qty: {item.qty || 1} × $ {(parseFloat(item.price_each) || 0).toFixed(2)}
                               </span>
                             </div>
                             <div className="item-total">
-                              LKR {((parseFloat(item.price_each) || 0) * (item.qty || 1)).toFixed(2)}
+                              $ {((parseFloat(item.price_each) || 0) * (item.qty || 1)).toFixed(2)}
                             </div>
                           </div>
                         ))
@@ -518,13 +518,13 @@ export default function Profile(){
                     {order.subtotal > 0 && (
                       <div className="order-summary-line">
                         <span>Subtotal:</span>
-                        <span>LKR {(parseFloat(order.subtotal) || 0).toFixed(2)}</span>
+                        <span>$ {(parseFloat(order.subtotal) || 0).toFixed(2)}</span>
                       </div>
                     )}
                     {order.discount_total > 0 && (
                       <div className="order-summary-line discount">
                         <span>Discount:</span>
-                        <span>-LKR {(parseFloat(order.discount_total) || 0).toFixed(2)}</span>
+                        <span>-$ {(parseFloat(order.discount_total) || 0).toFixed(2)}</span>
                       </div>
                     )}
                     {order.points_redeemed > 0 && (
@@ -541,7 +541,7 @@ export default function Profile(){
                     )}
                     <div className="order-summary-line total">
                       <span>Total:</span>
-                      <span><strong>LKR {(parseFloat(order.total) || 0).toFixed(2)}</strong></span>
+                      <span><strong>$ {(parseFloat(order.total) || 0).toFixed(2)}</strong></span>
                     </div>
                   </div>
                 </div>
@@ -639,9 +639,9 @@ export default function Profile(){
                     {r.discount_type && r.status === "Available" && (
                       <div style={{ marginTop: '0.25rem', color: '#666' }}>
                         <strong>Discount:</strong> {r.discount_value}
-                        {r.discount_type === 'PERCENT' ? '%' : ' LKR'}
+                        {r.discount_type === 'PERCENT' ? '%' : ' $'}
                         {r.min_order_amount && parseFloat(r.min_order_amount) > 0 && (
-                          <span> • <strong>Min order:</strong> LKR {parseFloat(r.min_order_amount).toFixed(2)}</span>
+                          <span> • <strong>Min order:</strong> $ {parseFloat(r.min_order_amount).toFixed(2)}</span>
                         )}
                       </div>
                     )}

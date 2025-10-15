@@ -1,4 +1,4 @@
-// Signup.jsx - Updated version with phone number
+// Signup.jsx - Updated version with centered layout
 import React, { useState } from "react";
 import "./login.css";
 import { useAuth } from "../../context/AuthContext.jsx";
@@ -49,9 +49,9 @@ export default function Signup(){
   return (
     <section className="login">
       <h1>Create your account</h1>
-      <div className="card c-pad" style={{ maxWidth: 520 }}>
-        <form onSubmit={submit} className="grid" style={{ gap: 10 }}>
-          <label style={{ display:"grid", gap:6 }}>
+      <div className="card c-pad">
+        <form onSubmit={submit} className="grid">
+          <label style={styles.label}>
             Full Name
             <input 
               value={name} 
@@ -61,7 +61,7 @@ export default function Signup(){
               disabled={loading}
             />
           </label>
-          <label style={{ display:"grid", gap:6 }}>
+          <label style={styles.label}>
             Email
             <input 
               type="email" 
@@ -72,7 +72,7 @@ export default function Signup(){
               disabled={loading}
             />
           </label>
-          <label style={{ display:"grid", gap:6 }}>
+          <label style={styles.label}>
             Phone Number
             <input 
               type="tel" 
@@ -83,8 +83,8 @@ export default function Signup(){
               disabled={loading}
             />
           </label>
-          <div className="row" style={{ gap: 10 }}>
-            <label style={{ display:"grid", gap:6, flex:1 }}>
+          <div className="row" style={styles.passwordRow}>
+            <label style={styles.passwordLabel}>
               Password
               <input 
                 type="password" 
@@ -95,7 +95,7 @@ export default function Signup(){
                 disabled={loading}
               />
             </label>
-            <label style={{ display:"grid", gap:6, flex:1 }}>
+            <label style={styles.passwordLabel}>
               Confirm
               <input 
                 type="password" 
@@ -125,3 +125,18 @@ export default function Signup(){
     </section>
   );
 }
+
+const styles = {
+  label: {
+    display: "grid",
+    gap: "6px"
+  },
+  passwordRow: {
+    gap: "10px"
+  },
+  passwordLabel: {
+    display: "grid",
+    gap: "6px",
+    flex: 1
+  }
+};

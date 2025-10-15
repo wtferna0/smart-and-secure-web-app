@@ -58,12 +58,24 @@
   border-radius: 10px;
   background: #fff;
   cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
 }
 
 .btn-primary {
   background: #7a4d25;
   border-color: #7a4d25;
   color: #fff;
+}
+
+/* cart button with badge */
+.cart-btn {
+  position: relative !important;
+}
+
+.cart-btn::after {
+  display: none !important;
 }
 
 /* hamburger button */

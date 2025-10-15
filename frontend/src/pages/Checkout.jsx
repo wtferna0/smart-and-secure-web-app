@@ -19,7 +19,7 @@ export default function Checkout() {
 
   // User state
   const [user, setUser] = useState({
-    name: authUser?.first_name && authUser?.last_name ? `LKR{authUser.first_name} LKR{authUser.last_name}` : "",
+    name: authUser?.first_name && authUser?.last_name ? `${authUser.first_name} ${authUser.last_name}` : "",
     email: authUser?.email || "",
     phone: authUser?.phone,
     address: "",
@@ -48,7 +48,7 @@ export default function Checkout() {
     if (authUser && isAuthenticated) {
       setUser(prev => ({
         ...prev,
-        name: authUser.first_name && authUser.last_name ? `LKR{authUser.first_name} LKR{authUser.last_name}` : prev.name,
+        name: authUser.first_name && authUser.last_name ? `${authUser.first_name} ${authUser.last_name}` : prev.name,
         email: authUser.email || prev.email, phone: authUser.phone || prev.phone,
       }));
     }
@@ -56,7 +56,7 @@ export default function Checkout() {
 
   const subTotal = useMemo(() => Math.round(total), [total]);
 
-  // Calculate maximum points that can be used (1 point = 1 LKR)
+  // Calculate maximum points that can be used (1 point = 1 $)
   const maxPointsUsable = useMemo(() => {
     const max = Math.min(userPoints, subTotal);
     return max;
@@ -107,7 +107,7 @@ export default function Checkout() {
           message: result.message
         });
         setPromo("");
-        alert(`Promo code applied! LKR{result.message}`);
+        alert(`Promo code applied! ${result.message}`);
       } else {
         alert(result.error || "Invalid or expired promo code.");
       }
@@ -130,7 +130,7 @@ export default function Checkout() {
     setAppliedPromo(null);
   };
 
-  // Points discount (1 point = 1 LKR) - applied AFTER promo
+  // Points discount (1 point = 1 $) - applied AFTER promo
   const pointsDiscount = useMemo(() => {
     if (!usePoints || pointsToUse === 0) return 0;
     return Math.min(pointsToUse, subTotal - promoDiscount);
@@ -444,7 +444,7 @@ export default function Checkout() {
               <div className="loy-row">
                 <div style={{ marginBottom: '0.5rem' }}>
                   <strong>Available Points: {userPoints}</strong>
-                  <span className="muted small"> (1 point = 1 LKR)</span>
+                  <span className="muted small"> (1 point = 1 $)</span>
                 </div>
 
                 {userPoints > 0 ? (
@@ -476,7 +476,7 @@ export default function Checkout() {
                           <span className="muted small">/ {maxPointsUsable} max</span>
                         </div>
                         <div className="muted small" style={{ marginTop: '0.25rem' }}>
-                          Discount: LKR {pointsDiscount}
+                          Discount: $ {pointsDiscount}
                         </div>
                       </div>
                     )}
@@ -530,23 +530,23 @@ export default function Checkout() {
                   <strong>{it.name}</strong>
                   <div className="muted small">Qty {it.quantity}</div>
                 </div>
-                <div>LKR {(it.price * it.quantity).toFixed(0)}</div>
+                <div>$ {(it.price * it.quantity).toFixed(0)}</div>
               </li>
             ))}
           </ul>
 
-          <div className="line"><span>Subtotal</span><span>LKR {subTotal}</span></div>
+          <div className="line"><span>Subtotal</span><span>$ {subTotal}</span></div>
 
           {promoDiscount > 0 && (
-            <div className="line"><span>Promo Discount</span><span>- LKR {promoDiscount}</span></div>
+            <div className="line"><span>Promo Discount</span><span>- $ {promoDiscount}</span></div>
           )}
 
           {pointsDiscount > 0 && isAuthenticated && (
-            <div className="line"><span>Loyalty Points Discount</span><span>- LKR {pointsDiscount}</span></div>
+            <div className="line"><span>Loyalty Points Discount</span><span>- $ {pointsDiscount}</span></div>
           )}
 
-          <div className="line"><span>Taxes (8%)</span><span>LKR {taxes}</span></div>
-          <div className="line total"><span>Total</span><span>LKR {grand}</span></div>
+          <div className="line"><span>Taxes (8%)</span><span>$ {taxes}</span></div>
+          <div className="line total"><span>Total</span><span>$ {grand}</span></div>
 
           {isAuthenticated && (
             <div className="muted small" style={{ marginBottom: '0.5rem', padding: '0.5rem', background: '#f8f9fa', borderRadius: '4px' }}>
@@ -563,7 +563,7 @@ export default function Checkout() {
             onClick={handlePayment}
             disabled={items.length === 0 || loading || !user.name || !user.email || !user.phone}
           >
-            {loading ? "Preparing Payment..." : `Pay with PayHere - LKR {grand}`}
+            {loading ? "Preparing Payment..." : `Pay with PayHere - $ ${grand}`}
           </button>
           <button
             className="btn btn-secondary"

@@ -68,7 +68,7 @@ const Dashboard = () => {
       return sum + orderTotal;
     }, 0);
 
-    console.log(`💰 Today's Revenue: LKR ${revenue} from ${todayOrders.length} orders`);
+    console.log(`💰 Today's Revenue: $ ${revenue} from ${todayOrders.length} orders`);
 
     return {
       revenue,
@@ -274,7 +274,7 @@ const Dashboard = () => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <span style={{ fontSize: '0.9rem', color: '#666' }}>Revenue Today</span>
             <strong style={{ fontSize: '2rem', fontWeight: 'bold', color: '#333' }}>
-              LKR {(stats.today_revenue || 0).toLocaleString()}
+              $ {(stats.today_revenue || 0).toLocaleString()}
             </strong>
           </div>
         </div>
@@ -487,7 +487,7 @@ const Dashboard = () => {
                         </span>
                       </td>
                       <td style={{ padding: '0.75rem', fontWeight: 'bold' }}>
-                        LKR {parseFloat(order.total || 0).toLocaleString()}
+                        $ {parseFloat(order.total || 0).toLocaleString()}
                         {isToday && <span style={{ color: '#28a745', fontSize: '0.7rem', marginLeft: '0.5rem' }}>Today</span>}
                       </td>
                       <td style={{ padding: '0.75rem', fontSize: '0.8rem', opacity: 0.7 }}>

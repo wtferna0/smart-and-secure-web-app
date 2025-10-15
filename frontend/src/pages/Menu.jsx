@@ -202,19 +202,21 @@ export default function Menu() {
   );
 }
 
-// Menu Item Card Component - SIMPLIFIED
+// Menu Item Card Component - UPDATED with quantity controls
 function MenuItemCard({ item }) {
-  const { addToCart, cartItems = [] } = useCart();
+  const { addToCart, removeFromCart, getItemQuantity } = useCart();
   const [imageError, setImageError] = useState(false);
+  const [showQuantityControls, setShowQuantityControls] = useState(false);
 
   const stockQty = item?.stock_qty || 0;
-  const currentInCart = cartItems.find(cartItem => cartItem.id === item.id)?.quantity || 0;
-  const availableQty = Math.max(0, stockQty - currentInCart);
+  const currentQuantity = getItemQuantity(item.id);
+  const availableQty = Math.max(0, stockQty - currentQuantity);
   const isOutOfStock = availableQty === 0;
 
-  // Handle adding the item to the cart
-  const handleAddToCart = () => {
+  // Handle initial cart button click
+  const handleCartButtonClick = () => {
     if (!isOutOfStock) {
+      setShowQuantityControls(true);
       addToCart({
         id: item.id,
         name: item.name,
@@ -226,13 +228,34 @@ function MenuItemCard({ item }) {
     }
   };
 
-  // Simple image handling - use item.image directly
+  // Handle quantity increase
+  const handleIncrease = () => {
+    if (availableQty > 0) {
+      addToCart({
+        id: item.id,
+        name: item.name,
+        price: parseFloat(item.price),
+        category: item.category?.name,
+        stock_qty: stockQty,
+        image: item.image,
+      });
+    }
+  };
+
+  // Handle quantity decrease
+  const handleDecrease = () => {
+    removeFromCart(item.id);
+    if (currentQuantity <= 1) {
+      setShowQuantityControls(false);
+    }
+  };
+
+  // Simple image handling
   const getItemImage = () => {
     if (item.image && !imageError) {
       return item.image;
     }
 
-    // Fallback logic based on category
     const categoryName = item?.category?.name?.toLowerCase() || '';
     if (categoryName.includes('coffee')) return defaultImages.coffee;
     if (categoryName.includes('tea')) return defaultImages.tea;
@@ -265,13 +288,39 @@ function MenuItemCard({ item }) {
         </div>
         <div className="row mc-foot">
           <div className="price">$ {parseFloat(item.price || 0).toFixed(2)}</div>
-          <button
-            className={`btn add ${isOutOfStock ? 'disabled' : ''}`}
-            onClick={handleAddToCart}
-            disabled={isOutOfStock}
-          >
-            {isOutOfStock ? 'Out of Stock' : '🛒 Add'}
-          </button>
+          
+          {/* Cart Controls */}
+          {showQuantityControls ? (
+            // Quantity Controls (shown after cart button is clicked)
+            <div className="quantity-controls active">
+              <button
+                className="btn btn-quantity minus"
+                onClick={handleDecrease}
+                disabled={currentQuantity <= 0}
+              >
+                −
+              </button>
+              <span className="quantity-display">
+                {currentQuantity}
+              </span>
+              <button
+                className="btn btn-quantity plus"
+                onClick={handleIncrease}
+                disabled={isOutOfStock}
+              >
+                +
+              </button>
+            </div>
+          ) : (
+            // Initial Cart Button (shown by default)
+            <button
+              className={`btn add ${isOutOfStock ? 'disabled' : ''}`}
+              onClick={handleCartButtonClick}
+              disabled={isOutOfStock}
+            >
+              {isOutOfStock ? 'Out of Stock' : '🛒 Add'}
+            </button>
+          )}
         </div>
       </div>
     </article>
